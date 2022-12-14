@@ -91,7 +91,13 @@ export default class BarChart extends React.Component<IBarChartProps, {}>
 
     @computed
     get numericalBins(): DataBin[] {
-        return filterNumericalBins(this.props.data);
+        // check if this.numericalData is empty
+        if (this.props.data.length === 0) {
+            // the props.data is empty even when we are creating a bar plot
+            return filterNumericalBins(this.props.data);
+        } else {
+            return filterNumericalBins(this.props.data);
+        }
     }
 
     @computed

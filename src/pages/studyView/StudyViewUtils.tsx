@@ -1137,10 +1137,13 @@ export function needAdditionShiftForLogScaleBarChart(
         !isIntegerPowerOfTen(numericalBins[0].start)
     );
 }
-
+//export function generateCountDataFromUserInput(dataInputToTransform){
+// This function should convert the user input data to an object suited for bar chart
+//}
 export function generateNumericalData(numericalBins: DataBin[]): BarDatum[] {
     // by default shift all x values by 1 -- we do not want to show a value right on the origin (zero)
     // additional possible shift for log scale
+    var data = numericalBins;
     const xShift = needAdditionShiftForLogScaleBarChart(numericalBins) ? 2 : 1;
 
     return numericalBins.map((dataBin: DataBin, index: number) => {
@@ -1782,7 +1785,7 @@ export function getDefaultChartTypeByClinicalAttribute(
 
     // TODO: update logic when number of categories above PIE_TO_TABLE_LIMIT
     if (clinicalAttribute.datatype === DataType.STRING) {
-        return ChartTypeEnum.PIE_CHART;
+        return ChartTypeEnum.BAR_CHART;
     }
 
     if (clinicalAttribute.datatype === DataType.NUMBER) {
@@ -2170,6 +2173,15 @@ export function getClinicalDataCountWithColorByClinicalDataCount(
             freq: getFrequencyStr(percentage * 100),
         };
     });
+}
+
+export function getClinicalDataCountNumericalByClinicalDataCount(
+    counts: ClinicalData[]
+) {
+    var testObject = {
+        id: 'Test',
+        count: 3,
+    };
 }
 
 export function pickClinicalAttrColorsByIndex(

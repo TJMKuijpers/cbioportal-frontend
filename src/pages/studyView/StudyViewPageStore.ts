@@ -4003,6 +4003,7 @@ export class StudyViewPageStore
                             .initialVisibleAttributesClinicalDataCountData
                             .result;
                     } else {
+                        // TIM --> hier gaat het misschien om
                         // Mostly the case when user adds new chart. It would be nice only fetching
                         // the chart specific data instead of using the unfilteredClinicalDataCount which will require
                         // all unfiltered clinical attributes data.
@@ -4984,11 +4985,21 @@ export class StudyViewPageStore
         invoke: async () => {
             const clinicalAttributeIdToDataType: { [id: string]: string } = {};
             _.map(Array.from(this._customCharts.values()), customChart => {
-                clinicalAttributeIdToDataType[
-                    customChart.uniqueKey
-                ] = customChart.clinicalAttribute
-                    ? customChart.clinicalAttribute.datatype
-                    : DataType.STRING;
+                if (customChart.dataType === 'Custom_Data') {
+                    // Check whether we want a pie or bar chart
+                    /**if (customChart.datatype ==="  ") {
+                        clinicalAttributeIdToDataType[customChart.uniqueKey] = DataType.NUMBER
+                    } else {
+                        clinicalAttributeIdToDataType[customChart.uniqueKey] = DataType.STRING
+                    }
+                     **/
+                } else {
+                    clinicalAttributeIdToDataType[
+                        customChart.uniqueKey
+                    ] = customChart.clinicalAttribute
+                        ? customChart.clinicalAttribute.datatype
+                        : DataType.STRING;
+                }
             });
 
             this.clinicalAttributes.result!.forEach(clinicalAttribute => {
@@ -4996,7 +5007,6 @@ export class StudyViewPageStore
                     clinicalAttribute.clinicalAttributeId
                 ] = clinicalAttribute.datatype;
             });
-
             return clinicalAttributeIdToDataType;
         },
     });
@@ -5244,7 +5254,6 @@ export class StudyViewPageStore
             : this.getDefaultCustomChartName();
 
         let allCases: CustomChartIdentifierWithValue[] = newChart.data;
-
         var sessionId = await sessionServiceClient.saveCustomData({
             origin: toJS(this.studyIds),
             displayName: newChartName,
@@ -5275,6 +5284,7 @@ export class StudyViewPageStore
             priority: 0,
             clinicalAttribute,
         };
+
         this.customChartSet.set(uniqueKey, {
             ...chartMeta,
             data: allCases,
@@ -5289,9 +5299,17 @@ export class StudyViewPageStore
             chartMeta.patientAttribute = true;
         }
 
+        // TIM
         this._customCharts.set(uniqueKey, chartMeta);
         this._customChartsSelectedCases.set(uniqueKey, allCases);
-        this.chartsType.set(uniqueKey, ChartTypeEnum.PIE_CHART);
+        this.chartsType.set(
+            uniqueKey,
+            newChart.datatype === 'STRING'
+                ? ChartTypeEnum.PIE_CHART
+                : ChartTypeEnum.BAR_CHART
+        );
+        if (newChart.datatype === 'NUMBER') {
+        }
         this.chartsDimension.set(uniqueKey, { w: 1, h: 1 });
         this.changeChartVisibility(uniqueKey, true);
         // Autoselect the groups

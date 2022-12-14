@@ -63,3 +63,5 @@ cert.pem
 end
 e2e-localdb-workspace/
 junit.xml
+deploy_frontend
+deploy_frontend.sh

@@ -235,7 +235,16 @@ export class StudySummaryTab extends React.Component<
                     props.getData = () =>
                         this.store.getChartDownloadableData(chartMeta);
                 } else {
-                    props.promise = this.store.getClinicalDataBin(chartMeta);
+                    // TODO check here if we can set the conversion to the object
+                    if (chartMeta.dataType === 'Custom_Data') {
+                        var getCounts = this.store.getCustomDataCount(
+                            chartMeta
+                        );
+                    } else {
+                        props.promise = this.store.getClinicalDataBin(
+                            chartMeta
+                        );
+                    }
                     props.filters = this.store.getClinicalDataFiltersByUniqueKey(
                         chartMeta.uniqueKey
                     );
