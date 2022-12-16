@@ -5,7 +5,7 @@ import {
     ClinicalAttribute,
     ClinicalData,
     ClinicalDataBinFilter,
-    ClinicalDataCount,
+    ClinicalDataCount, ClinicalDataCountItem,
     ClinicalDataMultiStudyFilter,
     DataFilterValue,
     DensityPlotBin,
@@ -149,6 +149,9 @@ export type ChartMeta = {
     patientAttribute: boolean;
     renderWhenDataChange: boolean;
 };
+
+
+
 export type ChartMetaWithDimensionAndChartType = ChartMeta & {
     dimension: ChartDimension;
     chartType: ChartType;

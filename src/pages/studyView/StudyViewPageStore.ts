@@ -2268,7 +2268,9 @@ export class StudyViewPageStore
     public genericAssayDataCountPromises: {
         [id: string]: MobxPromise<ClinicalDataCountSummary[]>;
     } = {};
-
+    public customDataCountNumericalPromosis:{
+        [id:string]:MobxPromise<DataBin[]>;
+    } ={};
     private _chartSampleIdentifiersFilterSet = observable.map<
         ChartUniqueKey,
         SampleIdentifier[]
@@ -4170,12 +4172,72 @@ export class StudyViewPageStore
                             this.chartToUsedColors.set(attributeId, new Set());
                     }
                     return this.addColorToCategories(counts, attributeId);
+
                 },
                 onError: () => {},
                 default: [],
             });
         }
         return this.customDataCountPromises[uniqueKey];
+    }
+  public getCustomDataNumerical(chartMeta:ChartMeta):MobxPromise<DataBin[]> {
+        // First find the data that belongs to the object's unique key
+        let uniqueKey: string = chartMeta.uniqueKey;
+        if (!this.customDataCountNumericalPromosis.hasOwnProperty(uniqueKey)) {
+            this.customDataCountNumericalPromosis[uniqueKey] = remoteData<
+                DataBin[]
+                >({
+                await: () => {
+                    return this._customDataFilterSet.has(uniqueKey)
+                        ? [this.selectedSamples]
+                        : [
+                            this.selectedSamples,
+                            this.unfilteredCustomDataCount,
+                        ];
+                },
+                invoke: async () => {
+                    // For now it is easier to get the counts via the clinical data count item object
+                    let result: ClinicalDataCountItem[] = [];
+                    // Fetch the results
+                    if (
+                        this._customDataFilterSet.has(uniqueKey) ||
+                        this.isInitialFilterState
+                    ) {
+                        if (!this.hasFilteredSamples) {
+                            return [];
+                        }
+                        result = await internalClient.fetchCustomDataCountsUsingPOST(
+                            {
+                                clinicalDataCountFilter: {
+                                    attributes: [
+                                        {
+                                            attributeId:
+                                            chartMeta.uniqueKey,
+                                        } as ClinicalDataFilter,
+                                    ],
+                                    studyViewFilter: this.filters,
+                                } as ClinicalDataCountFilter,
+                            }
+                        );
+                    } else {
+                        result = this.unfilteredCustomDataCount.result;
+                    }
+                    let data = _.find(result, {
+                        attributeId: chartMeta.uniqueKey,
+                    } as ClinicalDataCountItem)
+                    let outputobject:DataBin[]=[]
+                    if(data !== undefined){
+                        var attributeId=data.attributeId
+                        outputobject=data.counts.map((obj,i)=>{return{id:attributeId,end:Number(obj.value),start:Number(obj.value),specialValue:' ',...obj}})
+                    }
+                    return outputobject
+                },
+                onError: () => {},
+                default: [],
+
+        });
+        }
+      return this.customDataCountNumericalPromosis[uniqueKey];
     }
 
     public getGenericAssayChartDataCount(
@@ -4271,7 +4333,6 @@ export class StudyViewPageStore
                     // TODO this.barChartFilters.length > 0 ? 'STATIC' : 'DYNAMIC' (not trivial when multiple filters involved)
                     const dataBinMethod = DataBinMethodConstants.STATIC;
                     let result = [];
-
                     const initDataBinFilter = _.find(
                         this.initialVisibleAttributesClinicalDataBinAttributes
                             .result,
@@ -4355,6 +4416,7 @@ export class StudyViewPageStore
                 onError: () => {},
                 default: [],
             });
+
         }
         return this.clinicalDataBinPromises[uniqueKey];
     }
@@ -5267,7 +5329,7 @@ export class StudyViewPageStore
 
         const clinicalAttribute: ClinicalAttribute = {
             clinicalAttributeId: uniqueKey,
-            datatype: 'STRING',
+            datatype: newChart.datatype ,
             description: newChartName,
             displayName: newChartName,
             patientAttribute: false,
@@ -5308,8 +5370,7 @@ export class StudyViewPageStore
                 ? ChartTypeEnum.PIE_CHART
                 : ChartTypeEnum.BAR_CHART
         );
-        if (newChart.datatype === 'NUMBER') {
-        }
+
         this.chartsDimension.set(uniqueKey, { w: 1, h: 1 });
         this.changeChartVisibility(uniqueKey, true);
         // Autoselect the groups
