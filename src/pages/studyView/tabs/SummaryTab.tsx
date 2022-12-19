@@ -237,19 +237,16 @@ export class StudySummaryTab extends React.Component<
                 } else {
                     if(chartMeta.dataType === 'Custom_Data') {
                         props.promise =this.store.getCustomDataNumerical(chartMeta);
-                        props.onValueSelection = this.handlers.setCustomChartFilters;
-                        props.onResetSelection = this.handlers.setCustomChartFilters;
-
                     }else{
                         props.promise = this.store.getClinicalDataBin(chartMeta);
                     }
                     props.filters = this.store.getClinicalDataFiltersByUniqueKey(chartMeta.uniqueKey );
-
                     props.onDataBinSelection = this.handlers.onDataBinSelection;
                     props.onResetSelection = this.handlers.onDataBinSelection;
                     props.getData = () =>
                         this.store.getChartDownloadableData(chartMeta);
                 }
+
                 props.onToggleLogScale = this.handlers.onToggleLogScale;
                 props.onToggleNAValue = this.handlers.onToggleNAValue;
                 props.showLogScaleToggle = this.store.isLogScaleToggleVisible(
