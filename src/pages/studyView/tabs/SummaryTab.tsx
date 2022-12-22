@@ -167,6 +167,7 @@ export class StudySummaryTab extends React.Component<
                             clinicalDataFilterValue =>
                                 clinicalDataFilterValue.value
                         );
+
                     props.onValueSelection = this.handlers.setCustomChartFilters;
                     props.onResetSelection = this.handlers.setCustomChartFilters;
                     props.promise = this.store.getCustomDataCount(chartMeta);
@@ -235,18 +236,16 @@ export class StudySummaryTab extends React.Component<
                     props.getData = () =>
                         this.store.getChartDownloadableData(chartMeta);
                 } else {
-                    if(chartMeta.dataType === 'Custom_Data') {
-                        props.promise =this.store.getCustomDataNumerical(chartMeta);
-                    }else{
-                        props.promise = this.store.getClinicalDataBin(chartMeta);
-                    }
-                    props.filters = this.store.getClinicalDataFiltersByUniqueKey(chartMeta.uniqueKey );
+
+                    props.promise = this.store.getClinicalDataBin(chartMeta);
+                    props.filters = this.store.getClinicalDataFiltersByUniqueKey(
+                        chartMeta.uniqueKey
+                    );
                     props.onDataBinSelection = this.handlers.onDataBinSelection;
                     props.onResetSelection = this.handlers.onDataBinSelection;
                     props.getData = () =>
                         this.store.getChartDownloadableData(chartMeta);
                 }
-
                 props.onToggleLogScale = this.handlers.onToggleLogScale;
                 props.onToggleNAValue = this.handlers.onToggleNAValue;
                 props.showLogScaleToggle = this.store.isLogScaleToggleVisible(
