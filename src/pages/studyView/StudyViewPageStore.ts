@@ -1,16 +1,9 @@
 import _ from 'lodash';
 import internalClient from 'shared/api/cbioportalInternalClientInstance';
 import defaultClient from 'shared/api/cbioportalClientInstance';
+import client from 'shared/api/cbioportalClientInstance';
 import oncoKBClient from 'shared/api/oncokbClientInstance';
-import {
-    action,
-    computed,
-    IReactionDisposer,
-    makeObservable,
-    observable,
-    reaction,
-    toJS,
-} from 'mobx';
+import {action, computed, IReactionDisposer, makeObservable, observable, reaction, toJS,} from 'mobx';
 import {
     AlterationFilter,
     AndedPatientTreatmentFilters,
@@ -61,8 +54,8 @@ import {
     getSurvivalClinicalAttributesPrefix,
     MolecularAlterationType_filenameSuffix,
 } from 'shared/lib/StoreUtils';
-import { PatientSurvival } from 'shared/model/PatientSurvival';
-import { getPatientSurvivals } from 'pages/resultsView/SurvivalStoreHelper';
+import {PatientSurvival} from 'shared/model/PatientSurvival';
+import {getPatientSurvivals} from 'pages/resultsView/SurvivalStoreHelper';
 import {
     AnalysisGroup,
     annotationFilterActive,
@@ -141,23 +134,15 @@ import {
     updateCustomIntervalFilter,
 } from './StudyViewUtils';
 import MobxPromise from 'mobxpromise';
-import { SingleGeneQuery } from 'shared/lib/oql/oql-parser';
+import {SingleGeneQuery} from 'shared/lib/oql/oql-parser';
 import autobind from 'autobind-decorator';
-import {
-    isQueriedStudyAuthorized,
-    updateGeneQuery,
-} from 'pages/studyView/StudyViewUtils';
-import { generateDownloadFilenamePrefixByStudies } from 'shared/lib/FilenameUtils';
-import { unparseOQLQueryLine } from 'shared/lib/oql/oqlfilter';
+import {isQueriedStudyAuthorized, updateGeneQuery,} from 'pages/studyView/StudyViewUtils';
+import {generateDownloadFilenamePrefixByStudies} from 'shared/lib/FilenameUtils';
+import {unparseOQLQueryLine} from 'shared/lib/oql/oqlfilter';
 import sessionServiceClient from 'shared/api//sessionServiceInstance';
 import windowStore from 'shared/components/window/WindowStore';
-import { getHeatmapMeta } from '../../shared/lib/MDACCUtils';
-import {
-    ChartDimension,
-    ChartTypeEnum,
-    STUDY_VIEW_CONFIG,
-    StudyViewLayout,
-} from './StudyViewConfig';
+import {getHeatmapMeta} from '../../shared/lib/MDACCUtils';
+import {ChartDimension, ChartTypeEnum, STUDY_VIEW_CONFIG, StudyViewLayout,} from './StudyViewConfig';
 import {
     getComparisonLoadingUrl,
     getMDAndersonHeatmapStudyMetaUrl,
@@ -173,7 +158,7 @@ import {
     toPromise,
 } from 'cbioportal-frontend-commons';
 import request from 'superagent';
-import { trackStudyViewFilterEvent } from '../../shared/lib/tracking';
+import {trackStudyViewFilterEvent} from '../../shared/lib/tracking';
 import comparisonClient from '../../shared/api/comparisonGroupClientInstance';
 import {
     finalizeStudiesAttr,
@@ -182,38 +167,38 @@ import {
     splitData,
     StudyViewComparisonGroup,
 } from '../groupComparison/GroupComparisonUtils';
-import { LoadingPhase } from '../groupComparison/GroupComparisonLoading';
-import { sleepUntil } from '../../shared/lib/TimeUtils';
+import {LoadingPhase} from '../groupComparison/GroupComparisonLoading';
+import {sleepUntil} from '../../shared/lib/TimeUtils';
 import ComplexKeyMap from '../../shared/lib/complexKeyDataStructures/ComplexKeyMap';
 import MobxPromiseCache from 'shared/lib/MobxPromiseCache';
-import { CancerGene } from 'oncokb-ts-api-client';
+import {CancerGene} from 'oncokb-ts-api-client';
 
-import { AppStore } from 'AppStore';
-import { getGeneCNAOQL } from 'pages/studyView/TableUtils';
-import { MultiSelectionTableRow } from './table/MultiSelectionTable';
+import {AppStore} from 'AppStore';
+import {getGeneCNAOQL} from 'pages/studyView/TableUtils';
+import {MultiSelectionTableRow} from './table/MultiSelectionTable';
 import {
     getGroupParameters,
     getSelectedGroups,
 } from '../groupComparison/comparisonGroupManager/ComparisonGroupManagerUtils';
-import { IStudyViewScatterPlotData } from './charts/scatterPlot/StudyViewScatterPlotUtils';
-import { StudyViewPageTabKeyEnum } from 'pages/studyView/StudyViewPageTabs';
-import { AlterationTypeConstants, DataTypeConstants } from 'shared/constants';
+import {IStudyViewScatterPlotData} from './charts/scatterPlot/StudyViewScatterPlotUtils';
+import {StudyViewPageTabKeyEnum} from 'pages/studyView/StudyViewPageTabs';
+import {AlterationTypeConstants, DataTypeConstants} from 'shared/constants';
 import {
     createSurvivalAttributeIdsDict,
     generateStudyViewSurvivalPlotTitle,
     getSurvivalStatusBoolean,
 } from 'pages/resultsView/survival/SurvivalUtil';
-import { ISurvivalDescription } from 'pages/resultsView/survival/SurvivalDescriptionTable';
+import {ISurvivalDescription} from 'pages/resultsView/survival/SurvivalDescriptionTable';
 import {
     toTreatmentFilter,
     treatmentComparisonGroupName,
     treatmentUniqueKey,
 } from './table/treatments/treatmentsTableUtil';
 import StudyViewURLWrapper from './StudyViewURLWrapper';
-import { isMixedReferenceGenome } from 'shared/lib/referenceGenomeUtils';
-import { Datalabel } from 'shared/lib/DataUtils';
+import {isMixedReferenceGenome} from 'shared/lib/referenceGenomeUtils';
+import {Datalabel} from 'shared/lib/DataUtils';
 import PromisePlus from 'shared/lib/PromisePlus';
-import { getSuffixOfMolecularProfile } from 'shared/lib/molecularProfileUtils';
+import {getSuffixOfMolecularProfile} from 'shared/lib/molecularProfileUtils';
 import {
     createAlteredGeneComparisonSession,
     doesChartHaveComparisonGroupsLimit,
@@ -222,10 +207,7 @@ import {
     getSvData,
     groupSvDataByGene,
 } from 'pages/studyView/StudyViewComparisonUtils';
-import {
-    CNA_AMP_VALUE,
-    CNA_HOMDEL_VALUE,
-} from 'pages/resultsView/enrichments/EnrichmentsUtil';
+import {CNA_AMP_VALUE, CNA_HOMDEL_VALUE,} from 'pages/resultsView/enrichments/EnrichmentsUtil';
 import {
     BinsGeneratorConfig,
     GenericAssayDataBin,
@@ -244,12 +226,9 @@ import {
     IDriverAnnotationReport,
     initializeCustomDriverAnnotationSettings,
 } from 'shared/alterationFiltering/AnnotationFilteringSettings';
-import { ISettingsMenuButtonVisible } from 'shared/components/driverAnnotations/SettingsMenuButton';
-import {
-    CopyNumberEnrichmentEventType,
-    MutationEnrichmentEventType,
-} from 'shared/lib/comparison/ComparisonStoreUtils';
-import { getServerConfig } from 'config/config';
+import {ISettingsMenuButtonVisible} from 'shared/components/driverAnnotations/SettingsMenuButton';
+import {CopyNumberEnrichmentEventType, MutationEnrichmentEventType,} from 'shared/lib/comparison/ComparisonStoreUtils';
+import {getServerConfig} from 'config/config';
 import {
     ChartUserSetting,
     CustomChart,
@@ -260,9 +239,8 @@ import {
     StudyPageSettings,
     VirtualStudy,
 } from 'shared/api/session-service/sessionServiceModels';
-import { PageType } from 'shared/userSession/PageType';
-import client from 'shared/api/cbioportalClientInstance';
-import { FeatureFlagEnum } from 'shared/featureFlags';
+import {PageType} from 'shared/userSession/PageType';
+import {FeatureFlagEnum} from 'shared/featureFlags';
 
 type ChartUniqueKey = string;
 type ResourceId = string;
@@ -2268,9 +2246,7 @@ export class StudyViewPageStore
     public genericAssayDataCountPromises: {
         [id: string]: MobxPromise<ClinicalDataCountSummary[]>;
     } = {};
-    public customDataCountNumericalPromosis:{
-        [id:string]:MobxPromise<DataBin[]>;
-    } ={};
+
     private _chartSampleIdentifiersFilterSet = observable.map<
         ChartUniqueKey,
         SampleIdentifier[]
@@ -4005,7 +3981,6 @@ export class StudyViewPageStore
                             .initialVisibleAttributesClinicalDataCountData
                             .result;
                     } else {
-                        // TIM --> hier gaat het misschien om
                         // Mostly the case when user adds new chart. It would be nice only fetching
                         // the chart specific data instead of using the unfilteredClinicalDataCount which will require
                         // all unfiltered clinical attributes data.
@@ -4172,72 +4147,12 @@ export class StudyViewPageStore
                             this.chartToUsedColors.set(attributeId, new Set());
                     }
                     return this.addColorToCategories(counts, attributeId);
-
                 },
                 onError: () => {},
                 default: [],
             });
         }
         return this.customDataCountPromises[uniqueKey];
-    }
-  public getCustomDataNumerical(chartMeta:ChartMeta):MobxPromise<DataBin[]> {
-        // First find the data that belongs to the object's unique key
-        let uniqueKey: string = chartMeta.uniqueKey;
-        if (!this.customDataCountNumericalPromosis.hasOwnProperty(uniqueKey)) {
-            this.customDataCountNumericalPromosis[uniqueKey] = remoteData<
-                DataBin[]
-                >({
-                await: () => {
-                    return this._customDataFilterSet.has(uniqueKey)
-                        ? [this.selectedSamples]
-                        : [
-                            this.selectedSamples,
-                            this.unfilteredCustomDataCount,
-                        ];
-                },
-                invoke: async () => {
-                    // For now it is easier to get the counts via the clinical data count item object
-                    let result: ClinicalDataCountItem[] = [];
-                    // Fetch the results
-                    if (
-                        this._customDataFilterSet.has(uniqueKey) ||
-                        this.isInitialFilterState
-                    ) {
-                        if (!this.hasFilteredSamples) {
-                            return [];
-                        }
-                        result = await internalClient.fetchCustomDataCountsUsingPOST(
-                            {
-                                clinicalDataCountFilter: {
-                                    attributes: [
-                                        {
-                                            attributeId:
-                                            chartMeta.uniqueKey,
-                                        } as ClinicalDataFilter,
-                                    ],
-                                    studyViewFilter: this.filters,
-                                } as ClinicalDataCountFilter,
-                            }
-                        );
-                    } else {
-                        result = this.unfilteredCustomDataCount.result;
-                    }
-                    let data = _.find(result, {
-                        attributeId: chartMeta.uniqueKey,
-                    } as ClinicalDataCountItem)
-                    let outputobject:DataBin[]=[]
-                    if(data !== undefined){
-                        var attributeId=data.attributeId
-                        outputobject=data.counts.map((obj,i)=>{return{id:attributeId,end:Number(obj.value),start:Number(obj.value),specialValue:' ',...obj}})
-                    }
-                    return outputobject
-                },
-                onError: () => {},
-                default: [],
-
-        });
-        }
-      return this.customDataCountNumericalPromosis[uniqueKey];
     }
 
     public getGenericAssayChartDataCount(
@@ -4333,6 +4248,7 @@ export class StudyViewPageStore
                     // TODO this.barChartFilters.length > 0 ? 'STATIC' : 'DYNAMIC' (not trivial when multiple filters involved)
                     const dataBinMethod = DataBinMethodConstants.STATIC;
                     let result = [];
+
                     const initDataBinFilter = _.find(
                         this.initialVisibleAttributesClinicalDataBinAttributes
                             .result,
@@ -4416,7 +4332,6 @@ export class StudyViewPageStore
                 onError: () => {},
                 default: [],
             });
-
         }
         return this.clinicalDataBinPromises[uniqueKey];
     }
@@ -5047,21 +4962,11 @@ export class StudyViewPageStore
         invoke: async () => {
             const clinicalAttributeIdToDataType: { [id: string]: string } = {};
             _.map(Array.from(this._customCharts.values()), customChart => {
-                if (customChart.dataType === 'Custom_Data') {
-                    // Check whether we want a pie or bar chart
-                    /**if (customChart.datatype ==="  ") {
-                        clinicalAttributeIdToDataType[customChart.uniqueKey] = DataType.NUMBER
-                    } else {
-                        clinicalAttributeIdToDataType[customChart.uniqueKey] = DataType.STRING
-                    }
-                     **/
-                } else {
-                    clinicalAttributeIdToDataType[
-                        customChart.uniqueKey
-                    ] = customChart.clinicalAttribute
-                        ? customChart.clinicalAttribute.datatype
-                        : DataType.STRING;
-                }
+                clinicalAttributeIdToDataType[
+                    customChart.uniqueKey
+                ] = customChart.clinicalAttribute
+                    ? customChart.clinicalAttribute.datatype
+                    : DataType.STRING;
             });
 
             this.clinicalAttributes.result!.forEach(clinicalAttribute => {
@@ -5069,6 +4974,7 @@ export class StudyViewPageStore
                     clinicalAttribute.clinicalAttributeId
                 ] = clinicalAttribute.datatype;
             });
+
             return clinicalAttributeIdToDataType;
         },
     });
@@ -5314,14 +5220,15 @@ export class StudyViewPageStore
         const newChartName = newChart.displayName
             ? newChart.displayName
             : this.getDefaultCustomChartName();
-
         let allCases: CustomChartIdentifierWithValue[] = newChart.data;
+
         var sessionId = await sessionServiceClient.saveCustomData({
             origin: toJS(this.studyIds),
             displayName: newChartName,
             description: newChartName,
             datatype: 'STRING',
             patientAttribute: false,
+            //dataTypeInput:false,
             priority: 0,
             data: allCases,
         });
@@ -5329,7 +5236,7 @@ export class StudyViewPageStore
 
         const clinicalAttribute: ClinicalAttribute = {
             clinicalAttributeId: uniqueKey,
-            datatype: newChart.datatype ,
+            datatype: 'STRING',
             description: newChartName,
             displayName: newChartName,
             patientAttribute: false,
@@ -5346,7 +5253,6 @@ export class StudyViewPageStore
             priority: 0,
             clinicalAttribute,
         };
-
         this.customChartSet.set(uniqueKey, {
             ...chartMeta,
             data: allCases,
@@ -5361,16 +5267,10 @@ export class StudyViewPageStore
             chartMeta.patientAttribute = true;
         }
 
-        // TIM
         this._customCharts.set(uniqueKey, chartMeta);
         this._customChartsSelectedCases.set(uniqueKey, allCases);
-        this.chartsType.set(
-            uniqueKey,
-            newChart.datatype === 'STRING'
-                ? ChartTypeEnum.PIE_CHART
-                : ChartTypeEnum.BAR_CHART
-        );
-
+        // set charts type based on the ChartTypeEnum
+        this.chartsType.set(uniqueKey,(newChart.datatype === "STRING") ? ChartTypeEnum.PIE_CHART : ChartTypeEnum.BAR_CHART);
         this.chartsDimension.set(uniqueKey, { w: 1, h: 1 });
         this.changeChartVisibility(uniqueKey, true);
         // Autoselect the groups
@@ -5381,6 +5281,7 @@ export class StudyViewPageStore
                 )
                 .uniq()
                 .value();
+            this.setCustomChartFilters(chartMeta.uniqueKey, filters);
             this.setCustomChartFilters(chartMeta.uniqueKey, filters);
             this.newlyAddedCharts.clear();
             this.newlyAddedCharts.push(uniqueKey);
