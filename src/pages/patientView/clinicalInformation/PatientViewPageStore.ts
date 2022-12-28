@@ -517,6 +517,7 @@ export class PatientViewPageStore {
                             });
                         }
                     );
+
                     const genericAssayRawData = await client.fetchGenericAssayDataInMultipleMolecularProfilesUsingPOST(
                         {
                             genericAssayDataMultipleStudyFilter: {
@@ -719,11 +720,14 @@ export class PatientViewPageStore {
     readonly hasMutationalSignatureData = remoteData({
         await: () => [this.fetchAllMutationalSignatureData],
         invoke: async () => {
+            var profile_version=retrieveMutationalSignatureVersionFromData(this.fetchAllMutationalSignatureData.result.map(profile=>profile.molecularProfileId))
+            this.setMutationalSignaturesVersion(profile_version)
             return Promise.resolve(
                 this.fetchAllMutationalSignatureData.result &&
                     this.fetchAllMutationalSignatureData.result.length > 0
             );
         },
+
     });
     @observable _selectedMutationalSignatureVersion: string;
 

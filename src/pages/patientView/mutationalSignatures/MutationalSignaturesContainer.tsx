@@ -34,6 +34,7 @@ export default class MutationalSignaturesContainer extends React.Component<
         // split the id by "_", the last part is the version info
         // we know split will always have results
         // use uniq function to get all unique versions
+
         return _.chain(this.props.profiles)
             .map(profile => _.last(profile.molecularProfileId.split('_'))!)
             .filter(item => item in this.props.data)
