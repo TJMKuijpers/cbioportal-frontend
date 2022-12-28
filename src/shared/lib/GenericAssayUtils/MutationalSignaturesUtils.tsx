@@ -8,6 +8,9 @@ import { GenericAssayTypeConstants } from 'shared/lib/GenericAssayUtils/GenericA
 export enum MutationalSignaturesVersion {
     V2 = 'v2',
     V3 = 'v3',
+    SBS ='SBS',
+    DBS='DBS',
+    ID='ID'
 }
 
 export enum MutationalSignatureStableIdKeyWord {
@@ -162,4 +165,21 @@ export function validateMutationalSignatureRawData(
 
     // we are expecting contribution and pvalue profiles are in pairs
     return _.every(profileIdsGroupByVersion, ids => ids.length === 2);
+}
+
+export function retrieveMutationalSignatureVersionFromData(SignatureProfiles: any[]){
+    var value_to_set:string='v2';
+    var unique_profile_version=_.uniq(SignatureProfiles.map(function(obj){
+        return _.last(obj.split('_'))}))
+    if(unique_profile_version!==undefined) {
+        // give priority to version 3 over version 2
+        if(unique_profile_version.indexOf('v3')!== -1  && unique_profile_version.indexOf('v2') !==-1){
+            value_to_set=Object.values(MutationalSignaturesVersion)[unique_profile_version.indexOf('v3')]
+        }
+        else {
+            var version_to_set = Object.values(MutationalSignaturesVersion).indexOf(unique_profile_version[0] as unknown as MutationalSignaturesVersion);
+            value_to_set = Object.values(MutationalSignaturesVersion)[version_to_set];
+            }
+        }
+    return value_to_set
 }

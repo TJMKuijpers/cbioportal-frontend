@@ -34,8 +34,12 @@ export default class MutationalSignaturesContainer extends React.Component<
         // split the id by "_", the last part is the version info
         // we know split will always have results
         // use uniq function to get all unique versions
-        return _.chain(this.props.profiles)
-            .map(profile => _.last(profile.molecularProfileId.split('_'))!)
+
+        // not all patients have the newest mutational signatures --> check if data is present before giving the options
+        var possible_options= this.props.profiles
+            .map(profile => _.last(profile.molecularProfileId.split('_'))!);
+        possible_options=possible_options.filter(item => Object.keys(this.props.data).includes(item));
+        return _.chain(possible_options)
             .uniq()
             .value();
     }

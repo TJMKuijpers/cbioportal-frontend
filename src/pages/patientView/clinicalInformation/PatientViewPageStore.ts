@@ -189,6 +189,7 @@ import {
     MutationalSignaturesVersion,
     MutationalSignatureStableIdKeyWord,
     validateMutationalSignatureRawData,
+    retrieveMutationalSignatureVersionFromData,
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import { getServerConfig } from 'config/config';
 import { StructuralVariantFilter } from 'cbioportal-ts-api-client';
@@ -516,6 +517,7 @@ export class PatientViewPageStore {
                             });
                         }
                     );
+
                     const genericAssayRawData = await client.fetchGenericAssayDataInMultipleMolecularProfilesUsingPOST(
                         {
                             genericAssayDataMultipleStudyFilter: {
@@ -718,11 +720,14 @@ export class PatientViewPageStore {
     readonly hasMutationalSignatureData = remoteData({
         await: () => [this.fetchAllMutationalSignatureData],
         invoke: async () => {
+            var profile_version=retrieveMutationalSignatureVersionFromData(this.fetchAllMutationalSignatureData.result.map(profile=>profile.molecularProfileId))
+            this.setMutationalSignaturesVersion(profile_version)
             return Promise.resolve(
                 this.fetchAllMutationalSignatureData.result &&
                     this.fetchAllMutationalSignatureData.result.length > 0
             );
         },
+
     });
 
     // set version 2 of the mutational signature as default
