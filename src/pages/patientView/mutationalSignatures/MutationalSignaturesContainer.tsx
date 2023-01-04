@@ -12,6 +12,7 @@ import {
     getVersionOptions,
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import _ from 'lodash';
+import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
 
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
@@ -34,7 +35,7 @@ export default class MutationalSignaturesContainer extends React.Component<
         // split the id by "_", the last part is the version info
         // we know split will always have results
         // use uniq function to get all unique versions
-
+        
         return _.chain(this.props.profiles)
             .map(profile => _.last(profile.molecularProfileId.split('_'))!)
             .filter(item => item in this.props.data)
@@ -44,6 +45,8 @@ export default class MutationalSignaturesContainer extends React.Component<
 
     @computed get selectedVersion(): string {
         // all versions is defined in the MutationalSignaturesVersion
+        console.log(this.props.version);
+
         return (
             _.find(
                 this.availableVersions,
@@ -86,6 +89,15 @@ export default class MutationalSignaturesContainer extends React.Component<
                             />
                         </div>
                     </div>
+                </div>
+
+                <div
+                    style={{ display: 'inline-flex', width: 500, height: 500 }}
+                >
+                    <MutationalBarChart
+                        height={100}
+                        width={100}
+                    ></MutationalBarChart>
                 </div>
                 {this.props.data && (
                     <div>
