@@ -12,6 +12,7 @@ import {
     getVersionOptions,
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import _ from 'lodash';
+import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
 
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
@@ -36,9 +37,12 @@ export default class MutationalSignaturesContainer extends React.Component<
         // use uniq function to get all unique versions
 
         // not all patients have the newest mutational signatures --> check if data is present before giving the options
-        var possible_options= this.props.profiles
-            .map(profile => _.last(profile.molecularProfileId.split('_'))!);
-        possible_options=possible_options.filter(item => Object.keys(this.props.data).includes(item));
+        var possible_options = this.props.profiles.map(
+            profile => _.last(profile.molecularProfileId.split('_'))!
+        );
+        possible_options = possible_options.filter(item =>
+            Object.keys(this.props.data).includes(item)
+        );
         return _.chain(possible_options)
             .uniq()
             .value();
@@ -46,6 +50,8 @@ export default class MutationalSignaturesContainer extends React.Component<
 
     @computed get selectedVersion(): string {
         // all versions is defined in the MutationalSignaturesVersion
+        console.log(this.props.version);
+
         return (
             _.find(
                 this.availableVersions,
@@ -88,6 +94,15 @@ export default class MutationalSignaturesContainer extends React.Component<
                             />
                         </div>
                     </div>
+                </div>
+
+                <div
+                    style={{ display: 'inline-flex', width: 500, height: 500 }}
+                >
+                    <MutationalBarChart
+                        height={100}
+                        width={100}
+                    ></MutationalBarChart>
                 </div>
                 {this.props.data && (
                     <div>
