@@ -13,7 +13,7 @@ import {
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import _ from 'lodash';
 import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
-
+import returnSelectedProfile from '../clinicalInformation/ClinicalInformationMutationalSignatureTable';
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
     profiles: MolecularProfile[];
