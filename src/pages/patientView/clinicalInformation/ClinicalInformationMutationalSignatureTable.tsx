@@ -27,6 +27,12 @@ interface IMutationalSignatureRow {
         };
     };
 }
+export function getMutationalSignatureProfileData(
+    e: React.MouseEvent<Element, MouseEvent>
+): string {
+    // function to retrieve the count data based on the selected signature
+    return this.name;
+}
 
 export function prepareMutationalSignatureDataForTable(
     mutationalSignatureData: IMutationalSignature[]
@@ -89,7 +95,11 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
             {
                 name: 'Mutational Signature',
                 render: (data: IMutationalSignatureRow) => (
-                    <span>{data[this.firstCol]}</span>
+                    <span
+                        onClick={getMutationalSignatureProfileData.bind(data)}
+                    >
+                        {data[this.firstCol]}
+                    </span>
                 ),
                 download: (data: IMutationalSignatureRow) =>
                     `${data[this.firstCol]}`,
@@ -109,6 +119,8 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
                 render: (data: IMutationalSignatureRow) =>
                     data.sampleValues[col.id].confidence <
                     MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD ? ( //if it's a significant signature, bold the contribution
+                        // Based on significant pvalue the span is created with style.mutationalSignatureValue for bold (sign)
+                        // or normal styling (not signficant)
                         <span className={styles.mutationalSignatureValue}>
                             {getMutationalSignaturePercentage(
                                 data.sampleValues[col.id].value
