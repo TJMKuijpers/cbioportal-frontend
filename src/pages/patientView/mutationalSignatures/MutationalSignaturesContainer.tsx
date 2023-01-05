@@ -45,8 +45,6 @@ export default class MutationalSignaturesContainer extends React.Component<
 
     @computed get selectedVersion(): string {
         // all versions is defined in the MutationalSignaturesVersion
-        console.log(this.props.version);
-
         return (
             _.find(
                 this.availableVersions,
