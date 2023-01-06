@@ -90,11 +90,17 @@ export default class MutationalSignaturesContainer extends React.Component<
                 </div>
 
                 <div
-                    style={{ display: 'inline-flex', width: 500, height: 500 }}
+                    style={{
+                        display: 'inline-block',
+                        width: '250',
+                        height: '200',
+                    }}
                 >
                     <MutationalBarChart
-                        height={100}
-                        width={100}
+                        signature={'Signature Test'}
+                        height={450}
+                        width={500}
+                        refstatus={true}
                     ></MutationalBarChart>
                 </div>
                 {this.props.data && (
