@@ -33,10 +33,10 @@ export function getMutationalSignatureProfileData(
     // function to retrieve the count data based on the selected signature
     return this.name;
 }
-function highlightTextColor(e: React.MouseEvent<Element, MouseEvent>): void {
-    // Mouse over a signature should make the signature color change
-    console.log(this);
-}
+//function highlightTextColor(e: React.MouseEvent<Element, MouseEvent>): void {
+// Mouse over a signature should make the signature color change
+//    console.log(this);
+//}
 
 export function prepareMutationalSignatureDataForTable(
     mutationalSignatureData: IMutationalSignature[]

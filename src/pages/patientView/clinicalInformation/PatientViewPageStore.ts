@@ -716,27 +716,25 @@ export class PatientViewPageStore {
             );
         },
     });
-
+    //TIM
     readonly hasMutationalSignatureData = remoteData({
         await: () => [this.fetchAllMutationalSignatureData],
         invoke: async () => {
-            var profile_version=retrieveMutationalSignatureVersionFromData(this.fetchAllMutationalSignatureData.result.map(profile=>profile.molecularProfileId))
-            this.setMutationalSignaturesVersion(profile_version)
             return Promise.resolve(
                 this.fetchAllMutationalSignatureData.result &&
                     this.fetchAllMutationalSignatureData.result.length > 0
             );
         },
-
     });
 
     // set version 2 of the mutational signature as default
     @observable _selectedMutationalSignatureVersion: string =
-        MutationalSignaturesVersion.V2;
+        MutationalSignaturesVersion.V3;
     @computed get selectedMutationalSignatureVersion() {
+        // Update this function to change the _selectedMutationalSignatureVersion
         return this._selectedMutationalSignatureVersion;
     }
-    @action
+
     setMutationalSignaturesVersion(version: string) {
         this._selectedMutationalSignatureVersion = version;
     }

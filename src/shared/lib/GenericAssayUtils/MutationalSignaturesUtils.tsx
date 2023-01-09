@@ -8,9 +8,9 @@ import { GenericAssayTypeConstants } from 'shared/lib/GenericAssayUtils/GenericA
 export enum MutationalSignaturesVersion {
     V2 = 'v2',
     V3 = 'v3',
-    SBS ='SBS',
-    DBS='DBS',
-    ID='ID'
+    SBS = 'SBS',
+    DBS = 'DBS',
+    ID = 'ID',
 }
 
 export enum MutationalSignatureStableIdKeyWord {
@@ -167,19 +167,34 @@ export function validateMutationalSignatureRawData(
     return _.every(profileIdsGroupByVersion, ids => ids.length === 2);
 }
 
-export function retrieveMutationalSignatureVersionFromData(SignatureProfiles: any[]){
-    var value_to_set:string='v2';
-    var unique_profile_version=_.uniq(SignatureProfiles.map(function(obj){
-        return _.last(obj.split('_'))}))
-    if(unique_profile_version!==undefined) {
+export function retrieveMutationalSignatureVersionFromData(
+    SignatureProfiles: any[]
+) {
+    let valueToSet: string = 'v2';
+    let uniqueProfileVersion = _.uniq(
+        SignatureProfiles.map(function(obj) {
+            return _.last(obj.split('_'));
+        })
+    );
+    if (uniqueProfileVersion !== undefined) {
         // give priority to version 3 over version 2
-        if(unique_profile_version.indexOf('v3')!== -1  && unique_profile_version.indexOf('v2') !==-1){
-            value_to_set=Object.values(MutationalSignaturesVersion)[unique_profile_version.indexOf('v3')]
+        if (
+            uniqueProfileVersion.indexOf('v3') !== -1 &&
+            uniqueProfileVersion.indexOf('v2') !== -1
+        ) {
+            valueToSet = Object.values(MutationalSignaturesVersion)[
+                uniqueProfileVersion.indexOf('v3')
+            ];
+        } else {
+            let versionToSet = Object.values(
+                MutationalSignaturesVersion
+            ).indexOf(
+                (uniqueProfileVersion[0] as unknown) as MutationalSignaturesVersion
+            );
+            valueToSet = Object.values(MutationalSignaturesVersion)[
+                versionToSet
+            ];
         }
-        else {
-            var version_to_set = Object.values(MutationalSignaturesVersion).indexOf(unique_profile_version[0] as unknown as MutationalSignaturesVersion);
-            value_to_set = Object.values(MutationalSignaturesVersion)[version_to_set];
-            }
-        }
-    return value_to_set
+    }
+    return valueToSet;
 }

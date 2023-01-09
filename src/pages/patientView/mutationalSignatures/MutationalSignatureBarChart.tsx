@@ -72,7 +72,7 @@ let sigData = [
 ];
 
 export function transformMutationalSignatureData(dataset: any) {
-    var transformedDataSet = dataset.map((obj: DataMutSig) => {
+    let transformedDataSet = dataset.map((obj: DataMutSig) => {
         var referenceTransformed = -Math.abs(obj.reference);
         return { ...obj, referenceTransformed };
     });

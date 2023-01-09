@@ -37,13 +37,13 @@ export default class MutationalSignaturesContainer extends React.Component<
         // use uniq function to get all unique versions
 
         // not all patients have the newest mutational signatures --> check if data is present before giving the options
-        var possible_options = this.props.profiles.map(
+        let possibleOptions = this.props.profiles.map(
             profile => _.last(profile.molecularProfileId.split('_'))!
         );
-        possible_options = possible_options.filter(item =>
+        possibleOptions = possibleOptions.filter(item =>
             Object.keys(this.props.data).includes(item)
         );
-        return _.chain(possible_options)
+        return _.chain(possibleOptions)
             .uniq()
             .value();
     }
