@@ -728,13 +728,21 @@ export class PatientViewPageStore {
     });
 
     // set version 2 of the mutational signature as default
+    // set version 2 of the mutational signature as default
     @observable _selectedMutationalSignatureVersion: string =
-        MutationalSignaturesVersion.V3;
+        MutationalSignaturesVersion.V2;
     @computed get selectedMutationalSignatureVersion() {
-        // Update this function to change the _selectedMutationalSignatureVersion
+        if (this.fetchAllMutationalSignatureData.isComplete) {
+            let versionPresent = retrieveMutationalSignatureVersionFromData(
+                this.fetchAllMutationalSignatureData.result.map(
+                    profile => profile.molecularProfileId
+                )
+            );
+            this.setMutationalSignaturesVersion(versionPresent);
+        }
         return this._selectedMutationalSignatureVersion;
     }
-
+    @action
     setMutationalSignaturesVersion(version: string) {
         this._selectedMutationalSignatureVersion = version;
     }
