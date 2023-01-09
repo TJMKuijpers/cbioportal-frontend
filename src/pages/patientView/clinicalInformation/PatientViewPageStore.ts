@@ -327,7 +327,6 @@ export class PatientViewPageStore {
     }
 
     public internalClient: CBioPortalAPIInternal;
-
     @observable public activeLocus: string | undefined;
     @observable public activeTabId = '';
 
