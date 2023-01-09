@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { computed, action, makeObservable } from 'mobx';
+import { computed, action, makeObservable, observable } from 'mobx';
 import autobind from 'autobind-decorator';
 import FeatureTitle from 'shared/components/featureTitle/FeatureTitle';
 import { IMutationalSignature } from 'shared/model/MutationalSignature';
@@ -10,6 +10,7 @@ import { MolecularProfile } from 'cbioportal-ts-api-client';
 import {
     getVersionOption,
     getVersionOptions,
+    MutationalSignaturesVersion,
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import _ from 'lodash';
 import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
@@ -18,6 +19,11 @@ export interface IMutationalSignaturesContainerProps {
     profiles: MolecularProfile[];
     onVersionChange: (version: string) => void;
     version: string;
+}
+
+export function updateSelectedSignature(signatureName: string): void {
+    console.log('Ik wordt aangeroepen');
+    MutationalSignaturesContainer.prototype.updateSignature(signatureName);
 }
 
 @observer
@@ -29,6 +35,10 @@ export default class MutationalSignaturesContainer extends React.Component<
         super(props);
         makeObservable(this);
     }
+    @observable _selectedSignature: string = this.props.data[
+        this.props.version
+    ][0].meta.name;
+
     @computed get availableVersions() {
         // mutational signatures version is stored in the profile id
         // split the id by "_", the last part is the version info
@@ -55,7 +65,14 @@ export default class MutationalSignaturesContainer extends React.Component<
     private onVersionChange(option: { label: string; value: string }): void {
         this.props.onVersionChange(option.value);
     }
-
+    @computed get getSignature(): string {
+        return this._selectedSignature;
+    }
+    @action updateSignature(name: string): void {
+        console.log('Ik ga updaten');
+        this._selectedSignature = name;
+        console.log(this._selectedSignature);
+    }
     public render() {
         return (
             <div data-test="MutationalSignaturesContainer">
@@ -95,7 +112,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                     }}
                 >
                     <MutationalBarChart
-                        signature={'SBS11 (Aging)'}
+                        signature={this._selectedSignature}
                         height={450}
                         width={500}
                         refstatus={true}

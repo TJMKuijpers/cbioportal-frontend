@@ -10,7 +10,7 @@ import _ from 'lodash';
 import { observer } from 'mobx-react';
 import { computed, makeObservable, observable } from 'mobx';
 import { MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
-
+import { updateSelectedSignature } from '../mutationalSignatures/MutationalSignaturesContainer';
 export interface IClinicalInformationMutationalSignatureTableProps {
     data: IMutationalSignature[];
 }
@@ -30,6 +30,7 @@ interface IMutationalSignatureRow {
 function getMutationalSignatureProfileData(
     e: React.MouseEvent<Element, MouseEvent>
 ): void {
+    updateSelectedSignature(this.name);
     this._selectedSignature = this.name;
 }
 
@@ -78,9 +79,6 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
         super(props);
         makeObservable(this);
     }
-
-    @observable _selectedSignature: string = this.props.data[0]
-        .mutationalSignatureId;
 
     @computed get uniqueSamples() {
         return _.map(_.uniqBy(this.props.data, 'sampleId'), uniqSample => ({
