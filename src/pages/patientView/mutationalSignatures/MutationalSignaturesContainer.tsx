@@ -13,7 +13,6 @@ import {
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import _ from 'lodash';
 import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
-import returnSelectedProfile from '../clinicalInformation/ClinicalInformationMutationalSignatureTable';
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
     profiles: MolecularProfile[];
@@ -96,7 +95,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                     }}
                 >
                     <MutationalBarChart
-                        signature={'Signature Test'}
+                        signature={'SBS11 (Aging)'}
                         height={450}
                         width={500}
                         refstatus={true}

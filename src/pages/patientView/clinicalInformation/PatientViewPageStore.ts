@@ -742,13 +742,14 @@ export class PatientViewPageStore {
     });
 
 
+
     @computed get selectedMutationalSignatureVersion() {
         return (
             this._selectedMutationalSignatureVersion ||
             this.initialMutationalSignatureVersion.result!
         );
     }
-
+    @action
     setMutationalSignaturesVersion(version: string) {
         this._selectedMutationalSignatureVersion = version;
     }

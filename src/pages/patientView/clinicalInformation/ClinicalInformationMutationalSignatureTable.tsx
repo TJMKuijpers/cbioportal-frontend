@@ -8,7 +8,7 @@ import { IMutationalSignature } from '../../../shared/model/MutationalSignature'
 import { getMutationalSignaturePercentage } from '../../../shared/lib/FormatUtils';
 import _ from 'lodash';
 import { observer } from 'mobx-react';
-import { computed, makeObservable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import { MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 
 export interface IClinicalInformationMutationalSignatureTableProps {
@@ -27,16 +27,11 @@ interface IMutationalSignatureRow {
         };
     };
 }
-export function getMutationalSignatureProfileData(
+function getMutationalSignatureProfileData(
     e: React.MouseEvent<Element, MouseEvent>
-): string {
-    // function to retrieve the count data based on the selected signature
-    return this.name;
+): void {
+    this._selectedSignature = this.name;
 }
-//function highlightTextColor(e: React.MouseEvent<Element, MouseEvent>): void {
-// Mouse over a signature should make the signature color change
-//    console.log(this);
-//}
 
 export function prepareMutationalSignatureDataForTable(
     mutationalSignatureData: IMutationalSignature[]
@@ -84,6 +79,9 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
         makeObservable(this);
     }
 
+    @observable _selectedSignature: string = this.props.data[0]
+        .mutationalSignatureId;
+
     @computed get uniqueSamples() {
         return _.map(_.uniqBy(this.props.data, 'sampleId'), uniqSample => ({
             id: uniqSample.sampleId,
@@ -93,6 +91,7 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
     @computed get tableData() {
         return prepareMutationalSignatureDataForTable(this.props.data);
     }
+
     readonly firstCol = 'name';
     @computed get columns(): Column<IMutationalSignatureRow>[] {
         return [
