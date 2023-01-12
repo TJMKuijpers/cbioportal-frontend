@@ -200,6 +200,7 @@ import { SiteError } from 'shared/model/appMisc';
 
 type PageMode = 'patient' | 'sample';
 type ResourceId = string;
+let initialLoad: boolean = true;
 
 type NamespaceColumnConfigMap = {
     cna: NamespaceColumnConfig;
@@ -726,19 +727,21 @@ export class PatientViewPageStore {
         },
     });
 
-    // set version 2 of the mutational signature as default
-    // set version 2 of the mutational signature as default
+    @observable _selectedMutationalSignature = '';
     @observable _selectedMutationalSignatureVersion: string =
         MutationalSignaturesVersion.V2;
+
     @computed get selectedMutationalSignatureVersion() {
-        if (this.fetchAllMutationalSignatureData.isComplete) {
+        if (initialLoad && this.fetchAllMutationalSignatureData.isComplete) {
             let versionPresent = retrieveMutationalSignatureVersionFromData(
                 this.fetchAllMutationalSignatureData.result.map(
                     profile => profile.molecularProfileId
                 )
             );
             this.setMutationalSignaturesVersion(versionPresent);
+            initialLoad = false;
         }
+
         return this._selectedMutationalSignatureVersion;
     }
     @action
