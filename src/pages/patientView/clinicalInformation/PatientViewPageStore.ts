@@ -200,6 +200,7 @@ import { SiteError } from 'shared/model/appMisc';
 
 type PageMode = 'patient' | 'sample';
 type ResourceId = string;
+let initialLoad: boolean = true;
 
 type NamespaceColumnConfigMap = {
     cna: NamespaceColumnConfig;
@@ -726,6 +727,7 @@ export class PatientViewPageStore {
         },
     });
     @observable _selectedMutationalSignatureVersion: string;
+
 
     readonly initialMutationalSignatureVersion = remoteData({
         await: () => [],
