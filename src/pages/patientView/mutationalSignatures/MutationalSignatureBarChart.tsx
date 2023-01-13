@@ -58,7 +58,7 @@ export default class MutationalBarChart extends React.Component<
                     {this.props.version === 'v3' && (
                         <VictoryLegend
                             x={this.props.width / 2}
-                            y={this.props.refstatus ? 400 : 450}
+                            y={this.props.refstatus ? 420 : 460}
                             centerTitle
                             orientation="horizontal"
                             gutter={20}
@@ -78,7 +78,7 @@ export default class MutationalBarChart extends React.Component<
                     {this.props.version === 'v2' && (
                         <VictoryLegend
                             x={this.props.width / 2.1}
-                            y={this.props.refstatus ? 400 : 450}
+                            y={this.props.refstatus ? 420 : 460}
                             centerTitle
                             orientation="horizontal"
                             gutter={20}
@@ -90,6 +90,10 @@ export default class MutationalBarChart extends React.Component<
                                 { name: 'T>A', symbol: { fill: 'grey' } },
                                 { name: 'T>C', symbol: { fill: 'green' } },
                                 { name: 'T>G', symbol: { fill: 'pink' } },
+                                {
+                                    name: 'reference',
+                                    symbol: { fill: '#1e97f3' },
+                                },
                             ]}
                         />
                     )}
@@ -113,7 +117,20 @@ export default class MutationalBarChart extends React.Component<
                             y="count"
                             style={{
                                 data: {
-                                    fill: '#EE4B2B',
+                                    fill: (d: any) =>
+                                        d.label === 'C>A'
+                                            ? 'lightblue'
+                                            : d.label === 'C>G'
+                                            ? 'darkblue'
+                                            : d.label === 'C>T'
+                                            ? 'red'
+                                            : d.label === 'T>A'
+                                            ? 'grey'
+                                            : d.label === 'T>C'
+                                            ? 'green'
+                                            : d.label === 'T>G'
+                                            ? 'pink'
+                                            : '#EE4B2B',
                                     stroke: 'black',
                                     strokeWidth: 0.8,
                                 },
@@ -140,12 +157,22 @@ export default class MutationalBarChart extends React.Component<
                         )}
                     </VictoryStack>
                     {this.props.refstatus && (
-                        <VictoryAxis dependentAxis domain={[-100, 100]} />
+                        <VictoryAxis
+                            dependentAxis
+                            domain={[-100, 100]}
+                            style={{
+                                grid: { stroke: 'grey', strokeWidth: 0.5 },
+                            }}
+                        />
                     )}
                     {!this.props.refstatus && (
                         <VictoryAxis dependentAxis domain={[0, 100]} />
                     )}
-                    <VictoryAxis domain={[0, 50]} tickFormat={() => ''} />
+                    <VictoryAxis
+                        domain={[0, 50]}
+                        tickFormat={() => ''}
+                        style={{ axis: { stroke: 'white', strokeWidth: 2 } }}
+                    />
                 </VictoryChart>
             </div>
         );
