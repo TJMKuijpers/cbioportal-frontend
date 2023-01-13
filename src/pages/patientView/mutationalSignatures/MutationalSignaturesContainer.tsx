@@ -25,18 +25,18 @@ export interface IMutationalSignaturesContainerProps {
 }
 // use a state for the signature to update the signature based on
 var sigData = [
-    { id: 'a>c', count: 0, reference: 10, label: 'Mutation a>c' },
-    { id: 'a>t', count: 0, reference: 25, label: 'Mutation a>t' },
-    { id: 'a>g', count: 0, reference: 50, label: 'Mutation a>g' },
-    { id: 't>g', count: 0, reference: 20, label: 'Mutation t>g' },
-    { id: 't>c', count: 10, reference: 10, label: 'Mutation t>c' },
-    { id: 't>a', count: 25, reference: 25, label: 'Mutation t>a' },
-    { id: 'c>t', count: 40, reference: 80, label: 'Mutation c>t' },
-    { id: 'c>a', count: 10, reference: 50, label: 'Mutation c>a' },
-    { id: 'c>g', count: 30, reference: 30, label: 'Mutation c>g' },
-    { id: 'g>c', count: 70, reference: 70, label: 'Mutation a>c' },
-    { id: 'g>t', count: 5, reference: 25, label: 'Mutation a>c' },
-    { id: 'g>a', count: 15, reference: 50, label: 'Mutation a>c' },
+    { id: 'A>C', count: 24, reference: 10, label: 'Mutation a>c' },
+    { id: 'A>T', count: 12, reference: 25, label: 'Mutation a>t' },
+    { id: 'A>G', count: 34, reference: 50, label: 'Mutation a>g' },
+    { id: 'T>G', count: 53, reference: 20, label: 'Mutation t>g' },
+    { id: 'T>C', count: 10, reference: 10, label: 'Mutation t>c' },
+    { id: 'T>A', count: 25, reference: 25, label: 'Mutation t>a' },
+    { id: 'C>T', count: 40, reference: 80, label: 'Mutation c>t' },
+    { id: 'C>A', count: 10, reference: 50, label: 'Mutation c>a' },
+    { id: 'C>G', count: 30, reference: 30, label: 'Mutation c>g' },
+    { id: 'G>C', count: 70, reference: 70, label: 'Mutation a>c' },
+    { id: 'G>T', count: 5, reference: 25, label: 'Mutation a>c' },
+    { id: 'G>A', count: 15, reference: 50, label: 'Mutation a>c' },
     { id: 'ID1', count: 40, reference: 80, label: 'Mutation a>c' },
     { id: 'ID2', count: 10, reference: 50, label: 'Mutation a>c' },
     { id: 'ID3', count: 30, reference: 30, label: 'Mutation a>c' },
@@ -214,16 +214,17 @@ export default class MutationalSignaturesContainer extends React.Component<
                         <div
                             style={{
                                 display: 'inline-block',
-                                width: '250',
+                                width: '500',
                                 height: '200',
                             }}
                         >
                             <MutationalBarChart
                                 signature={this.state.signatureProfile}
-                                height={450}
-                                width={500}
+                                height={500}
+                                width={900}
                                 refstatus={true}
                                 data={this.state.signatureData}
+                                version={this.props.version}
                             ></MutationalBarChart>
                         </div>
                         <ClinicalInformationMutationalSignatureTable
