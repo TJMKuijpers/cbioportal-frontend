@@ -122,7 +122,10 @@ export default class MutationalSignaturesContainer extends React.Component<
     IMutationalSignaturesContainerProps,
     {}
 > {
-    state = { signatureProfile: 'initial signature', signatureData: sigData };
+    state = {
+        signatureProfile: this.props.data[this.props.version][0].meta.name,
+        signatureData: sigData,
+    };
     callbackFunction = (childData: string, childDataObject: DataMutSig[]) => {
         this.setState({
             signatureProfile: childData,
@@ -166,6 +169,9 @@ export default class MutationalSignaturesContainer extends React.Component<
     @action.bound
     private onVersionChange(option: { label: string; value: string }): void {
         this.props.onVersionChange(option.value);
+        this.state.signatureProfile = this.props.data[
+            option.value
+        ][0].meta.name;
     }
     @action.bound changeSignature(name: string): void {
         this._selectedSignature = name;
