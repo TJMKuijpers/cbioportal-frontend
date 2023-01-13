@@ -27,6 +27,25 @@ export interface IMutationalBarChartProps {
     version: string;
 }
 
+const colormap = [
+    { name: 'C>A', color: 'lightblue' },
+    { name: 'C>G', color: 'darkblue' },
+    { name: 'C>T', color: 'red' },
+    { name: 'T>A', color: 'grey' },
+    { name: 'T>C', color: 'green' },
+    { name: 'T>G', color: 'pink' },
+    { name: 'reference', color: '#1e97f3' },
+    { name: 'AC>NN', color: 'skyblue' },
+    { name: 'AT>NN', color: 'blue' },
+    { name: 'CC>NN', color: 'green' },
+    { name: 'CG>NN', color: 'darkgreen' },
+    { name: 'CT>NN', color: 'pink' },
+    { name: 'CG>NN', color: 'darkred' },
+    { name: 'TA>NN', color: 'sand' },
+    { name: 'TC>NN', color: 'orange' },
+    { name: 'TG>NN', color: 'lila' },
+    { name: 'TT>NN', color: 'purple' },
+];
 export function transformMutationalSignatureData(dataset: any) {
     let transformedDataSet = dataset.map((obj: DataMutSig) => {
         var referenceTransformed = -Math.abs(obj.reference);
