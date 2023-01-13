@@ -6,6 +6,7 @@ import {
     VictoryLabel,
     VictoryStack,
     VictoryTooltip,
+    VictoryLegend,
 } from 'victory';
 import { computed, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react';
@@ -23,6 +24,7 @@ export interface IMutationalBarChartProps {
     height: number;
     refstatus: boolean;
     data: DataMutSig[];
+    version: string;
 }
 
 export function transformMutationalSignatureData(dataset: any) {
@@ -45,39 +47,79 @@ export default class MutationalBarChart extends React.Component<
     }
 
     public render() {
-        if (this.props.refstatus) {
-            return (
-                <div>
-                    <VictoryChart
-                        domainPadding={10}
-                        padding={{ top: 50, bottom: 50, right: 0, left: 50 }}
-                        height={this.props.height}
-                        width={this.props.width}
-                    >
-                        <VictoryLabel
+        return (
+            <div>
+                <VictoryChart
+                    domainPadding={10}
+                    padding={{ top: 50, bottom: 80, right: 50, left: 50 }}
+                    height={this.props.height}
+                    width={this.props.width}
+                >
+                    {this.props.version === 'v3' && (
+                        <VictoryLegend
                             x={this.props.width / 2}
-                            y={25}
-                            textAnchor="middle"
-                            text={this.props.signature}
+                            y={this.props.refstatus ? 400 : 450}
+                            centerTitle
+                            orientation="horizontal"
+                            gutter={20}
+                            style={{ title: { fontSize: 20 } }}
+                            data={[
+                                {
+                                    name: 'Mutation profile',
+                                    symbol: { fill: '#EE4B2B' },
+                                },
+                                {
+                                    name: 'Reference profile',
+                                    symbol: { fill: '#1e97f3' },
+                                },
+                            ]}
                         />
-                        <VictoryStack>
-                            <VictoryBar
-                                labelComponent={<VictoryTooltip />}
-                                barRatio={0.8}
-                                barWidth={5}
-                                data={transformMutationalSignatureData(
-                                    this.props.data
-                                )}
-                                x="id"
-                                y="count"
-                                style={{
-                                    data: {
-                                        fill: '#EE4B2B',
-                                        stroke: 'black',
-                                        strokeWidth: 0.8,
-                                    },
-                                }}
-                            />
+                    )}
+                    {this.props.version === 'v2' && (
+                        <VictoryLegend
+                            x={this.props.width / 2.1}
+                            y={this.props.refstatus ? 400 : 450}
+                            centerTitle
+                            orientation="horizontal"
+                            gutter={20}
+                            style={{ title: { fontSize: 20 } }}
+                            data={[
+                                { name: 'C>A', symbol: { fill: 'lightblue' } },
+                                { name: 'C>G', symbol: { fill: 'darkblue' } },
+                                { name: 'C>T', symbol: { fill: 'red' } },
+                                { name: 'T>A', symbol: { fill: 'grey' } },
+                                { name: 'T>C', symbol: { fill: 'green' } },
+                                { name: 'T>G', symbol: { fill: 'pink' } },
+                            ]}
+                        />
+                    )}
+
+                    <VictoryLabel
+                        x={this.props.width / 2}
+                        y={25}
+                        style={[{ fill: 'black', fontSize: 25 }]}
+                        textAnchor="middle"
+                        text={this.props.signature}
+                    />
+                    <VictoryStack>
+                        <VictoryBar
+                            labelComponent={<VictoryTooltip />}
+                            barRatio={0.8}
+                            barWidth={5}
+                            data={transformMutationalSignatureData(
+                                this.props.data
+                            )}
+                            x="id"
+                            y="count"
+                            style={{
+                                data: {
+                                    fill: '#EE4B2B',
+                                    stroke: 'black',
+                                    strokeWidth: 0.8,
+                                },
+                            }}
+                        />
+                        {this.props.refstatus && (
                             <VictoryBar
                                 labelComponent={<VictoryTooltip />}
                                 barRatio={0.8}
@@ -95,49 +137,17 @@ export default class MutationalBarChart extends React.Component<
                                     },
                                 }}
                             />
-                        </VictoryStack>
-                        <VictoryAxis dependentAxis domain={[-100, 100]} />
-
-                        <VictoryAxis domain={[0, 50]} tickFormat={() => ''} />
-                    </VictoryChart>
-                </div>
-            );
-        } else {
-            return (
-                <VictoryChart
-                    domainPadding={10}
-                    padding={{ top: 50, bottom: 50, right: 0, left: 50 }}
-                    height={this.props.height}
-                    width={this.props.width}
-                >
-                    <VictoryLabel
-                        x={this.props.width / 2}
-                        y={25}
-                        textAnchor="middle"
-                        text={this.props.signature}
-                    />
-                    <VictoryStack>
-                        <VictoryBar
-                            labelComponent={<VictoryTooltip />}
-                            barRatio={0.8}
-                            barWidth={5}
-                            data={this.props.data}
-                            x="id"
-                            y="count"
-                            style={{
-                                data: {
-                                    fill: '#EE4B2B',
-                                    stroke: 'black',
-                                    strokeWidth: 0.8,
-                                },
-                            }}
-                        />
+                        )}
                     </VictoryStack>
-                    <VictoryAxis dependentAxis domain={[0, 100]} />
-
+                    {this.props.refstatus && (
+                        <VictoryAxis dependentAxis domain={[-100, 100]} />
+                    )}
+                    {!this.props.refstatus && (
+                        <VictoryAxis dependentAxis domain={[0, 100]} />
+                    )}
                     <VictoryAxis domain={[0, 50]} tickFormat={() => ''} />
                 </VictoryChart>
-            );
-        }
+            </div>
+        );
     }
 }
