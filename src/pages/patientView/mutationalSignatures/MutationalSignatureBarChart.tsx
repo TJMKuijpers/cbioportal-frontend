@@ -8,7 +8,7 @@ import {
     VictoryTooltip,
     VictoryLegend,
 } from 'victory';
-import { computed, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react';
 
 export type DataMutSig = {
@@ -16,6 +16,14 @@ export type DataMutSig = {
     count: number;
     reference: number;
     label: string;
+};
+
+export type DataTableSignature = {
+    id: string;
+    count: number;
+    reference: number;
+    label: string;
+    color: string;
 };
 
 export interface IMutationalBarChartProps {
@@ -27,7 +35,7 @@ export interface IMutationalBarChartProps {
     version: string;
 }
 
-const colormap = [
+const colorMap = [
     { name: 'C>A', color: 'lightblue' },
     { name: 'C>G', color: 'darkblue' },
     { name: 'C>T', color: 'red' },
@@ -46,6 +54,7 @@ const colormap = [
     { name: 'TG>NN', color: 'lila' },
     { name: 'TT>NN', color: 'purple' },
 ];
+
 export function transformMutationalSignatureData(dataset: any) {
     let transformedDataSet = dataset.map((obj: DataMutSig) => {
         var referenceTransformed = -Math.abs(obj.reference);
@@ -54,6 +63,26 @@ export function transformMutationalSignatureData(dataset: any) {
     return transformedDataSet;
 }
 
+function getColorsForSignatures(dataset: any) {
+    // color will be mapped based on the label
+    let colorTableData = dataset.map((obj: any) => {
+        let colorIdentity = colorMap.filter(cmap => {
+            if (cmap.name === obj.label) {
+                return cmap.color;
+            }
+        });
+        let colorValue =
+            colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
+        return { ...obj, colorValue };
+    });
+    return colorTableData;
+}
+
+function obtainMutationSignaturesForPlot(dataset: any) {
+    let transformatedData = transformMutationalSignatureData(dataset);
+    let coloredCodedData = getColorsForSignatures(transformatedData);
+    return coloredCodedData;
+}
 // Mutational bar chart will visualize the mutation count per signature
 // Input: data object per signature with an id (base mutation) and a value (count)
 @observer
@@ -129,27 +158,14 @@ export default class MutationalBarChart extends React.Component<
                             labelComponent={<VictoryTooltip />}
                             barRatio={0.8}
                             barWidth={5}
-                            data={transformMutationalSignatureData(
+                            data={obtainMutationSignaturesForPlot(
                                 this.props.data
                             )}
                             x="id"
                             y="count"
                             style={{
                                 data: {
-                                    fill: (d: any) =>
-                                        d.label === 'C>A'
-                                            ? 'lightblue'
-                                            : d.label === 'C>G'
-                                            ? 'darkblue'
-                                            : d.label === 'C>T'
-                                            ? 'red'
-                                            : d.label === 'T>A'
-                                            ? 'grey'
-                                            : d.label === 'T>C'
-                                            ? 'green'
-                                            : d.label === 'T>G'
-                                            ? 'pink'
-                                            : '#EE4B2B',
+                                    fill: (d: any) => d.colorValue,
                                     stroke: 'black',
                                     strokeWidth: 0.8,
                                 },
@@ -160,7 +176,7 @@ export default class MutationalBarChart extends React.Component<
                                 labelComponent={<VictoryTooltip />}
                                 barRatio={0.8}
                                 barWidth={5}
-                                data={transformMutationalSignatureData(
+                                data={obtainMutationSignaturesForPlot(
                                     this.props.data
                                 )}
                                 x="id"
