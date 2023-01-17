@@ -16,6 +16,7 @@ export enum MutationalSignaturesVersion {
 export enum MutationalSignatureStableIdKeyWord {
     MutationalSignatureContributionKeyWord = 'contribution',
     MutationalSignatureConfidenceKeyWord = 'pvalue',
+    MutationalSignatureCountKeyWord = 'matrix',
 }
 
 export const MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD = 0.05;

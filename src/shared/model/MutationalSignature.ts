@@ -20,3 +20,14 @@ export interface IMutationalSignatureMeta {
     category: string;
     confidenceStatement: string;
 }
+
+export interface IMutationalCounts {
+    sampleId: string;
+    uniqueSampleKey: string;
+    patientId: string;
+    uniquePatientKey: string;
+    studyId: string;
+    mutationalSignatureId: string;
+    version: string;
+    count: number;
+}
