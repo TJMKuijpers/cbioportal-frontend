@@ -24,45 +24,7 @@ export interface IMutationalSignaturesContainerProps {
     version: string;
 }
 // use a state for the signature to update the signature based on
-var sigDataV2 = [
-    { id: 'MUT1', count: 24, reference: 10, label: 'C>A' },
-    { id: 'MUT2', count: 12, reference: 25, label: 'C>A' },
-    { id: 'MUT3', count: 34, reference: 50, label: 'C>A' },
-    { id: 'MUT4', count: 53, reference: 20, label: 'C>A' },
-    { id: 'MUT5', count: 10, reference: 10, label: 'C>A' },
-    { id: 'MUT6', count: 25, reference: 25, label: 'C>G' },
-    { id: 'MUT7', count: 40, reference: 80, label: 'C>G' },
-    { id: 'MUT8', count: 10, reference: 50, label: 'C>G' },
-    { id: 'MUT9', count: 30, reference: 30, label: 'C>G' },
-    { id: 'MUT10', count: 70, reference: 70, label: 'C>T' },
-    { id: 'MUT11', count: 5, reference: 25, label: 'C>T' },
-    { id: 'MUT12', count: 15, reference: 50, label: 'C>T' },
-    { id: 'ID1', count: 40, reference: 80, label: 'C>T' },
-    { id: 'ID2', count: 10, reference: 50, label: 'C>T' },
-    { id: 'ID3', count: 30, reference: 30, label: 'T>A' },
-    { id: 'ID4', count: 70, reference: 70, label: 'T>A' },
-    { id: 'ID5', count: 5, reference: 25, label: 'T>A' },
-    { id: 'ID6', count: 15, reference: 50, label: 'T>A' },
-    { id: 'ID7', count: 40, reference: 80, label: 'T>A' },
-    { id: 'ID8', count: 10, reference: 50, label: 'T>C' },
-    { id: 'ID9', count: 30, reference: 30, label: 'T>C' },
-    { id: 'ID10', count: 70, reference: 70, label: 'T>C' },
-    { id: 'ID11', count: 5, reference: 25, label: 'T>C' },
-    { id: 'ID12', count: 15, reference: 50, label: 'T>C' },
-    { id: 'ID13', count: 30, reference: 30, label: 'T>C' },
-    { id: 'ID14', count: 70, reference: 70, label: 'T>C' },
-    { id: 'ID15', count: 5, reference: 25, label: 'T>C' },
-    { id: 'ID16', count: 15, reference: 50, label: 'T>G' },
-    { id: 'ID17', count: 30, reference: 30, label: 'T>G' },
-    { id: 'ID18', count: 70, reference: 70, label: 'T>G' },
-    { id: 'ID19', count: 5, reference: 25, label: 'T>G' },
-    { id: 'ID20', count: 15, reference: 50, label: 'T>G' },
-    { id: 'ID21', count: 40, reference: 80, label: 'T>G' },
-    { id: 'ID22', count: 10, reference: 50, label: 'T>G' },
-    { id: 'ID23', count: 30, reference: 30, label: 'T>G' },
-    { id: 'ID24', count: 70, reference: 70, label: 'T>G' },
-    { id: 'ID25', count: 5, reference: 25, label: 'T>X' },
-];
+
 var sigDataV3 = [
     { id: 'a>c', count: 10, reference: 10, label: 'C>A' },
     { id: 'a>t', count: 20, reference: 25, label: 'C>A' },
@@ -160,7 +122,6 @@ export default class MutationalSignaturesContainer extends React.Component<
         this.state.signatureProfile = this.props.data[
             option.value
         ][0].meta.name;
-        this.state.signatureData = sigDataV2;
     }
     @action.bound changeSignature(name: string): void {
         this._selectedSignature = name;
@@ -209,12 +170,12 @@ export default class MutationalSignaturesContainer extends React.Component<
                             style={{
                                 display: 'inline-block',
                                 width: '500',
-                                height: '200',
+                                height: '600',
                             }}
                         >
                             <MutationalBarChart
                                 signature={this.state.signatureProfile}
-                                height={500}
+                                height={600}
                                 width={900}
                                 refstatus={true}
                                 data={this.state.signatureData}

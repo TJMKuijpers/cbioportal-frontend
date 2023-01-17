@@ -182,6 +182,7 @@ import {
 import {
     IMutationalSignature,
     IMutationalSignatureMeta,
+    IMutationalCounts,
 } from 'shared/model/MutationalSignature';
 import { GenericAssayTypeConstants } from 'shared/lib/GenericAssayUtils/GenericAssayConfig';
 
@@ -517,7 +518,6 @@ export class PatientViewPageStore {
                             });
                         }
                     );
-
                     const genericAssayRawData = await client.fetchGenericAssayDataInMultipleMolecularProfilesUsingPOST(
                         {
                             genericAssayDataMultipleStudyFilter: {
@@ -536,7 +536,58 @@ export class PatientViewPageStore {
         },
         []
     );
+    readonly mutationalSignatureCountDataGroupedByPatient = remoteData({
+        await: () => [
+            this.fetchAllMutationalSignatureData,
+            this.mutationData,
+            this.mutationalSignatureMetaGroupByStableId,
+        ],
+        invoke: () => {
+            const contributionData = this.fetchAllMutationalSignatureData.result.filter(
+                data =>
+                    data.molecularProfileId.includes(
+                        MutationalSignatureStableIdKeyWord.MutationalSignatureContributionKeyWord
+                    )
+            );
 
+            const countData = this.fetchAllMutationalSignatureData.result.filter(
+                // this function should map the patientID/sampleID to the
+                data =>
+                    data.molecularProfileId.includes(
+                        MutationalSignatureStableIdKeyWord.MutationalSignatureCountKeyWord
+                    )
+            );
+            // Now we map the matrix count to the unique sample key
+            const countDataMap = _.keyBy(
+                countData,
+                data =>
+                    data.uniqueSampleKey +
+                    _.last(data.genericAssayStableId.split('_'))
+            );
+            // Combine the count data with the signature data
+            const result: IMutationalCounts[] = [];
+            // only loop the contribution data then find and fill in the paired confidence data
+            if (contributionData && contributionData.length > 0) {
+                for (const contribution of contributionData) {
+                    let mutationalSignatureChartData: IMutationalCounts = {} as IMutationalCounts;
+                    mutationalSignatureChartData.mutationalSignatureId =
+                        contribution.genericAssayStableId;
+                    mutationalSignatureChartData.patientId =
+                        contribution.patientId;
+                    mutationalSignatureChartData.sampleId =
+                        contribution.sampleId;
+                    mutationalSignatureChartData.studyId = contribution.studyId;
+                    mutationalSignatureChartData.uniquePatientKey =
+                        contribution.uniquePatientKey;
+                    mutationalSignatureChartData.uniqueSampleKey =
+                        contribution.uniqueSampleKey;
+                    mutationalSignatureChartData.count = 1;
+                    result.push(mutationalSignatureChartData);
+                }
+            }
+            return Promise.resolve(result);
+        },
+    });
     readonly mutationalSignatureDataGroupByVersion = remoteData(
         {
             await: () => [

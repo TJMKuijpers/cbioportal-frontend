@@ -53,6 +53,22 @@ const colorMap = [
     { name: 'TC>NN', color: 'orange' },
     { name: 'TG>NN', color: 'lila' },
     { name: 'TT>NN', color: 'purple' },
+    { name: '1bp Deletion (C)', color: '#f39c12' },
+    { name: '1bp Deletion (T)', color: '#d68910' },
+    { name: '1bp Insertion (C)', color: '#82E0AA' },
+    { name: '1bp Insertion (C)', color: '#28b463' },
+    { name: '1bp deletion at repeats (2)', color: '#f1948a' },
+    { name: '1bp deletion at repeats (3)', color: '#ec7063' },
+    { name: '1bp deletion at repeats (4)', color: '#e74c3c' },
+    { name: '1bp deletion at repeats (5+)', color: '#cb4335' },
+    { name: '1bp Insertion at repeats (2)', color: '#aed6f1' },
+    { name: '1bp Insertion at repeats (3)', color: '#85c1e9' },
+    { name: '1bp Insertion at repeats (4)', color: '#85c1e9' },
+    { name: '1bp Insertion at repeats (5+)', color: '#3498db' },
+    { name: 'microhomology deletion length 2', color: '#c39bd3' },
+    { name: 'microhomology deletion length 3', color: '#9b59b6' },
+    { name: 'microhomology deletion length 4', color: '#7d3c98' },
+    { name: 'microhomology deletion length 5+', color: '#4a235a' },
 ];
 
 export function transformMutationalSignatureData(dataset: any) {
@@ -64,7 +80,6 @@ export function transformMutationalSignatureData(dataset: any) {
 }
 
 function getColorsForSignatures(dataset: any) {
-    // color will be mapped based on the label
     let colorTableData = dataset.map((obj: any) => {
         let colorIdentity = colorMap.filter(cmap => {
             if (cmap.name === obj.label) {
@@ -78,11 +93,6 @@ function getColorsForSignatures(dataset: any) {
     return colorTableData;
 }
 
-function obtainMutationSignaturesForPlot(dataset: any) {
-    let transformatedData = transformMutationalSignatureData(dataset);
-    let coloredCodedData = getColorsForSignatures(transformatedData);
-    return coloredCodedData;
-}
 // Mutational bar chart will visualize the mutation count per signature
 // Input: data object per signature with an id (base mutation) and a value (count)
 @observer
@@ -94,57 +104,41 @@ export default class MutationalBarChart extends React.Component<
         super(props);
     }
 
+    @action formatLegendColor(data: any) {
+        let labelsPresent = this.props.data.map(obj => {
+            return obj.label;
+        });
+        let dataLegend = data.filter((obj2: any) => {
+            if (labelsPresent.includes(obj2.name)) {
+                return obj2;
+            }
+        });
+        let legend = dataLegend.map((obj: any) => {
+            let entry = { name: obj.name, symbol: { fill: obj.color } };
+            return entry;
+        });
+        return legend;
+    }
+
     public render() {
         return (
             <div>
                 <VictoryChart
                     domainPadding={10}
-                    padding={{ top: 50, bottom: 80, right: 50, left: 50 }}
+                    padding={{ top: 30, bottom: 100, right: 50, left: 50 }}
                     height={this.props.height}
                     width={this.props.width}
                 >
-                    {this.props.version === 'v3' && (
-                        <VictoryLegend
-                            x={this.props.width / 2}
-                            y={this.props.refstatus ? 420 : 460}
-                            centerTitle
-                            orientation="horizontal"
-                            gutter={20}
-                            style={{ title: { fontSize: 20 } }}
-                            data={[
-                                {
-                                    name: 'Mutation profile',
-                                    symbol: { fill: '#EE4B2B' },
-                                },
-                                {
-                                    name: 'Reference profile',
-                                    symbol: { fill: '#1e97f3' },
-                                },
-                            ]}
-                        />
-                    )}
-                    {this.props.version === 'v2' && (
-                        <VictoryLegend
-                            x={this.props.width / 2.1}
-                            y={this.props.refstatus ? 420 : 460}
-                            centerTitle
-                            orientation="horizontal"
-                            gutter={20}
-                            style={{ title: { fontSize: 20 } }}
-                            data={[
-                                { name: 'C>A', symbol: { fill: 'lightblue' } },
-                                { name: 'C>G', symbol: { fill: 'darkblue' } },
-                                { name: 'C>T', symbol: { fill: 'red' } },
-                                { name: 'T>A', symbol: { fill: 'grey' } },
-                                { name: 'T>C', symbol: { fill: 'green' } },
-                                { name: 'T>G', symbol: { fill: 'pink' } },
-                                {
-                                    name: 'reference',
-                                    symbol: { fill: '#1e97f3' },
-                                },
-                            ]}
-                        />
-                    )}
+                    <VictoryLegend
+                        x={this.props.width / 2.5}
+                        y={this.props.refstatus ? 500 : 500}
+                        centerTitle
+                        orientation="horizontal"
+                        gutter={20}
+                        style={{ title: { fontSize: 20 } }}
+                        itemsPerRow={6}
+                        data={this.formatLegendColor(colorMap)}
+                    />
 
                     <VictoryLabel
                         x={this.props.width / 2}
@@ -158,9 +152,7 @@ export default class MutationalBarChart extends React.Component<
                             labelComponent={<VictoryTooltip />}
                             barRatio={0.8}
                             barWidth={5}
-                            data={obtainMutationSignaturesForPlot(
-                                this.props.data
-                            )}
+                            data={getColorsForSignatures(this.props.data)}
                             x="id"
                             y="count"
                             style={{
@@ -176,7 +168,7 @@ export default class MutationalBarChart extends React.Component<
                                 labelComponent={<VictoryTooltip />}
                                 barRatio={0.8}
                                 barWidth={5}
-                                data={obtainMutationSignaturesForPlot(
+                                data={transformMutationalSignatureData(
                                     this.props.data
                                 )}
                                 x="id"
@@ -195,19 +187,44 @@ export default class MutationalBarChart extends React.Component<
                         <VictoryAxis
                             dependentAxis
                             domain={[-100, 100]}
+                            label={'Mutation count'}
                             style={{
+                                axis: { stroke: 'black', strokeWidth: 1 },
                                 grid: { stroke: 'grey', strokeWidth: 0.5 },
+                                axisLabel: { padding: 40 },
                             }}
                         />
                     )}
                     {!this.props.refstatus && (
-                        <VictoryAxis dependentAxis domain={[0, 100]} />
+                        <VictoryAxis
+                            dependentAxis
+                            domain={[0, 100]}
+                            label={'Mutation count'}
+                            style={{
+                                axis: { stroke: 'black', strokeWidth: 1 },
+                                grid: { stroke: 'grey', strokeWidth: 0.5 },
+                                axisLabel: { padding: 40 },
+                            }}
+                        />
                     )}
-                    <VictoryAxis
-                        domain={[0, 50]}
-                        tickFormat={() => ''}
-                        style={{ axis: { stroke: 'white', strokeWidth: 2 } }}
-                    />
+                    {this.props.refstatus && (
+                        <VictoryAxis
+                            domain={[0, 50]}
+                            tickFormat={() => ''}
+                            style={{
+                                axis: { stroke: 'white', strokeWidth: 2 },
+                            }}
+                        />
+                    )}
+                    {!this.props.refstatus && (
+                        <VictoryAxis
+                            domain={[0, 50]}
+                            tickFormat={() => ''}
+                            style={{
+                                axis: { stroke: 'black', strokeWidth: 1 },
+                            }}
+                        />
+                    )}
                 </VictoryChart>
             </div>
         );
