@@ -631,6 +631,10 @@ export function tabs(
                         pageComponent.patientViewPageStore
                             .selectedMutationalSignatureVersion
                     }
+                    dataCount={
+                        pageComponent.patientViewPageStore
+                            .mutationalSignatureCountDataGroupedByVersion.result
+                    }
                 />
             </MSKTab>
         );

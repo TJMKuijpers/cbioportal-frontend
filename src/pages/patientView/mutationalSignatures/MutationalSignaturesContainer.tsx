@@ -3,7 +3,10 @@ import { Observer, observer } from 'mobx-react';
 import { computed, action, makeObservable, observable } from 'mobx';
 import autobind from 'autobind-decorator';
 import FeatureTitle from 'shared/components/featureTitle/FeatureTitle';
-import { IMutationalSignature } from 'shared/model/MutationalSignature';
+import {
+    IMutationalSignature,
+    IMutationalCounts,
+} from 'shared/model/MutationalSignature';
 import ClinicalInformationMutationalSignatureTable from '../clinicalInformation/ClinicalInformationMutationalSignatureTable';
 import Select from 'react-select';
 import { MolecularProfile } from 'cbioportal-ts-api-client';
@@ -22,55 +25,9 @@ export interface IMutationalSignaturesContainerProps {
     profiles: MolecularProfile[];
     onVersionChange: (version: string) => void;
     version: string;
+    dataCount: { [version: string]: IMutationalCounts[] };
 }
 // use a state for the signature to update the signature based on
-
-var sigDataV3 = [
-    { id: 'a>c', count: 10, reference: 10, label: 'C>A' },
-    { id: 'a>t', count: 20, reference: 25, label: 'C>A' },
-    { id: 'a>g', count: 30, reference: 50, label: 'C>A' },
-    { id: 't>g', count: 40, reference: 20, label: 'C>A' },
-    { id: 't>c', count: 10, reference: 10, label: 'C>A' },
-    { id: 't>a', count: 25, reference: 25, label: 'C>G' },
-    { id: 'c>t', count: 40, reference: 80, label: 'C>G' },
-    { id: 'c>a', count: 10, reference: 50, label: 'C>G' },
-    { id: 'c>g', count: 30, reference: 30, label: 'C>G' },
-    { id: 'g>c', count: 70, reference: 70, label: 'C>G' },
-    { id: 'g>t', count: 5, reference: 25, label: 'T>C' },
-    { id: 'g>a', count: 15, reference: 50, label: 'T>C' },
-    { id: 'ID1', count: 40, reference: 80, label: 'T>C' },
-    { id: 'ID2', count: 10, reference: 50, label: 'T>C' },
-    { id: 'ID3', count: 30, reference: 30, label: 'T>C' },
-    { id: 'ID4', count: 70, reference: 70, label: 'T>C' },
-    { id: 'ID5', count: 5, reference: 25, label: 'AC>NN' },
-    { id: 'ID6', count: 15, reference: 50, label: 'AC>NN' },
-    { id: 'ID7', count: 40, reference: 80, label: 'AC>NN' },
-    { id: 'ID8', count: 10, reference: 50, label: 'AC>NN' },
-    { id: 'ID9', count: 30, reference: 30, label: 'AT>NN' },
-    { id: 'ID10', count: 70, reference: 70, label: 'AT>NN' },
-    { id: 'ID11', count: 5, reference: 25, label: 'AT>NN' },
-    { id: 'ID12', count: 15, reference: 50, label: 'CG>NN' },
-    { id: 'ID13', count: 30, reference: 30, label: 'CG>NN' },
-    { id: 'ID14', count: 70, reference: 70, label: 'CG>NN' },
-    { id: 'ID15', count: 5, reference: 25, label: 'CG>NN' },
-    { id: 'ID16', count: 15, reference: 50, label: 'CG>NN' },
-    { id: 'ID17', count: 30, reference: 30, label: 'CG>NN' },
-    { id: 'ID18', count: 70, reference: 70, label: 'TC>NN' },
-    { id: 'ID19', count: 5, reference: 25, label: 'TC>NN' },
-    { id: 'ID20', count: 15, reference: 50, label: 'TC>NN' },
-    { id: 'ID21', count: 40, reference: 80, label: 'TC>NN' },
-    { id: 'ID22', count: 10, reference: 50, label: 'TG>NN' },
-    { id: 'ID23', count: 30, reference: 30, label: 'TG>NN' },
-    { id: 'ID24', count: 70, reference: 70, label: 'TG>NN' },
-    { id: 'ID25', count: 5, reference: 25, label: 'TG>NN' },
-    { id: 'ID26', count: 15, reference: 50, label: 'TG>NN' },
-    { id: 'ID27', count: 40, reference: 80, label: 'TT>NN' },
-    { id: 'ID28', count: 10, reference: 0, label: 'TT>NN' },
-    { id: 'ID29', count: 30, reference: 0, label: 'TT>NN' },
-    { id: 'ID30', count: 70, reference: 0, label: 'TT>NN' },
-    { id: 'ID31', count: 5, reference: 0, label: 'TT>NN' },
-    { id: 'ID32', count: 15, reference: 0, label: 'TT>NN' },
-];
 
 @observer
 export default class MutationalSignaturesContainer extends React.Component<
@@ -79,12 +36,10 @@ export default class MutationalSignaturesContainer extends React.Component<
 > {
     state = {
         signatureProfile: this.props.data[this.props.version][0].meta.name,
-        signatureData: sigDataV3,
     };
-    callbackFunction = (childData: string, childDataObject: DataMutSig[]) => {
+    callbackFunction = (childData: string) => {
         this.setState({
             signatureProfile: childData,
-            signatureData: childDataObject,
         });
     };
     constructor(props: IMutationalSignaturesContainerProps) {
@@ -93,7 +48,9 @@ export default class MutationalSignaturesContainer extends React.Component<
     }
 
     @observable _selectedSignature: string = this.state.signatureProfile;
-    @observable _selectedData: DataMutSig[] = sigDataV3;
+    @observable _selectedData: IMutationalCounts[] = this.props.dataCount[
+        this.props.version
+    ];
     @computed get availableVersions() {
         // mutational signatures version is stored in the profile id
         // split the id by "_", the last part is the version info
@@ -177,8 +134,8 @@ export default class MutationalSignaturesContainer extends React.Component<
                                 signature={this.state.signatureProfile}
                                 height={600}
                                 width={900}
-                                refstatus={true}
-                                data={this.state.signatureData}
+                                refStatus={false}
+                                data={this.props.dataCount[this.props.version]}
                                 version={this.props.version}
                             ></MutationalBarChart>
                         </div>

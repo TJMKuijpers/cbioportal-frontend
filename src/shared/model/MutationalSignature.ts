@@ -22,12 +22,12 @@ export interface IMutationalSignatureMeta {
 }
 
 export interface IMutationalCounts {
-    sampleId: string;
     uniqueSampleKey: string;
     patientId: string;
     uniquePatientKey: string;
     studyId: string;
-    mutationalSignatureId: string;
+    mutationalSignatureType: string;
+    mutationalSignatureClass: string;
     version: string;
     count: number;
 }

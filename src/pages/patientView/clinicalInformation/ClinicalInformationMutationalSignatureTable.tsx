@@ -10,14 +10,9 @@ import _ from 'lodash';
 import { observer } from 'mobx-react';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
-import MutationalBarChart, {
-    DataMutSig,
-} from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
-import { patientViewTabs } from 'pages/patientView/PatientViewPageTabs';
-import MutationalSignaturesContainer from 'pages/patientView/mutationalSignatures/MutationalSignaturesContainer';
 export interface IClinicalInformationMutationalSignatureTableProps {
     data: IMutationalSignature[];
-    parentCallback: (childData: string, childDataObject: DataMutSig[]) => void;
+    parentCallback: (childData: string) => void;
 }
 
 class MutationalSignatureTable extends LazyMobXTable<IMutationalSignatureRow> {}
@@ -75,9 +70,8 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
     {}
 > {
     @observable selectedSignature = '';
-    @observable selectedData = sigData2;
     sendData = () => {
-        this.props.parentCallback(this.selectedSignature, this.selectedData);
+        this.props.parentCallback(this.selectedSignature);
     };
 
     constructor(props: IClinicalInformationMutationalSignatureTableProps) {
@@ -183,50 +177,3 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
         );
     }
 }
-
-var sigData2 = [
-    { id: 'a>c', count: 10, reference: 10, label: 'C>A' },
-    { id: 'a>t', count: 20, reference: 25, label: 'C>A' },
-    { id: 'a>g', count: 30, reference: 50, label: 'C>A' },
-    { id: 't>g', count: 40, reference: 20, label: 'C>A' },
-    { id: 't>c', count: 10, reference: 10, label: 'C>A' },
-    { id: 't>a', count: 25, reference: 25, label: 'C>G' },
-    { id: 'c>t', count: 40, reference: 80, label: 'C>G' },
-    { id: 'c>a', count: 10, reference: 50, label: 'C>G' },
-    { id: 'c>g', count: 30, reference: 30, label: 'C>G' },
-    { id: 'g>c', count: 70, reference: 70, label: 'C>G' },
-    { id: 'g>t', count: 5, reference: 25, label: 'T>C' },
-    { id: 'g>a', count: 15, reference: 50, label: 'T>C' },
-    { id: 'ID1', count: 40, reference: 80, label: 'T>C' },
-    { id: 'ID2', count: 10, reference: 50, label: 'T>C' },
-    { id: 'ID3', count: 30, reference: 30, label: 'T>C' },
-    { id: 'ID4', count: 70, reference: 70, label: 'T>C' },
-    { id: 'ID5', count: 5, reference: 25, label: 'AC>NN' },
-    { id: 'ID6', count: 15, reference: 50, label: 'AC>NN' },
-    { id: 'ID7', count: 40, reference: 80, label: 'AC>NN' },
-    { id: 'ID8', count: 10, reference: 50, label: 'AC>NN' },
-    { id: 'ID9', count: 30, reference: 30, label: 'AT>NN' },
-    { id: 'ID10', count: 70, reference: 70, label: 'AT>NN' },
-    { id: 'ID11', count: 5, reference: 25, label: 'AT>NN' },
-    { id: 'ID12', count: 15, reference: 50, label: 'CG>NN' },
-    { id: 'ID13', count: 30, reference: 30, label: 'CG>NN' },
-    { id: 'ID14', count: 70, reference: 70, label: 'CG>NN' },
-    { id: 'ID15', count: 5, reference: 25, label: 'CG>NN' },
-    { id: 'ID16', count: 15, reference: 50, label: 'CG>NN' },
-    { id: 'ID17', count: 30, reference: 30, label: 'CG>NN' },
-    { id: 'ID18', count: 70, reference: 70, label: 'TC>NN' },
-    { id: 'ID19', count: 5, reference: 25, label: 'TC>NN' },
-    { id: 'ID20', count: 15, reference: 50, label: 'TC>NN' },
-    { id: 'ID21', count: 40, reference: 80, label: 'TC>NN' },
-    { id: 'ID22', count: 10, reference: 50, label: 'TG>NN' },
-    { id: 'ID23', count: 30, reference: 30, label: 'TG>NN' },
-    { id: 'ID24', count: 70, reference: 70, label: 'TG>NN' },
-    { id: 'ID25', count: 5, reference: 25, label: 'TG>NN' },
-    { id: 'ID26', count: 15, reference: 50, label: 'TG>NN' },
-    { id: 'ID27', count: 40, reference: 80, label: 'TT>NN' },
-    { id: 'ID28', count: 10, reference: 0, label: 'TT>NN' },
-    { id: 'ID29', count: 30, reference: 0, label: 'TT>NN' },
-    { id: 'ID30', count: 70, reference: 0, label: 'TT>NN' },
-    { id: 'ID31', count: 5, reference: 0, label: 'TT>NN' },
-    { id: 'ID32', count: 15, reference: 0, label: 'TT>NN' },
-];
