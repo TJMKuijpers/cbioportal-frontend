@@ -26,8 +26,8 @@ export interface IMutationalCounts {
     patientId: string;
     uniquePatientKey: string;
     studyId: string;
-    mutationalSignatureType: string;
-    mutationalSignatureClass: string;
+    mutationalSignatureType: unknown;
+    mutationalSignatureClass: unknown;
     version: string;
     count: number;
 }
