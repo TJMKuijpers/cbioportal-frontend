@@ -541,7 +541,7 @@ export class PatientViewPageStore {
             await: () => [
                 this.fetchAllMutationalSignatureData,
                 this.mutationData,
-                this.mutationalSignatureMetaGroupByStableId,
+                this.fetchAllMutationalSignatureCountMetaData,
             ],
             invoke: () => {
                 const countData = this.fetchAllMutationalSignatureData.result.filter(
@@ -549,6 +549,19 @@ export class PatientViewPageStore {
                         data.molecularProfileId.includes(
                             MutationalSignatureStableIdKeyWord.MutationalSignatureCountKeyWord
                         )
+                );
+                // @ts-ignore
+                const signatureLabelMap = this.fetchAllMutationalSignatureCountMetaData!.result.map(
+                    obj => {
+                        let signatureId = obj.stableId;
+                        let signatureName = Object.values(
+                            obj.genericEntityMetaProperties
+                        )[0];
+                        return {
+                            stableId: signatureId,
+                            signatureName: signatureName,
+                        };
+                    }
                 );
                 const result: IMutationalCounts[] = [];
                 // only loop the contribution data then find and fill in the paired confidence data
@@ -569,9 +582,11 @@ export class PatientViewPageStore {
                         );
                         mutationalSignatureChartData.mutationalSignatureClass =
                             'C>A';
-                        mutationalSignatureChartData.mutationalSignatureType =
-                            'A[C>A]T';
+                        mutationalSignatureChartData.mutationalSignatureType = signatureLabelMap
+                            .filter(obj => obj.stableId === count.stableId)
+                            .map(obj => obj.signatureName)[0];
                         result.push(mutationalSignatureChartData);
+                        console.log(result);
                     }
                 }
                 return Promise.resolve(_.groupBy(result, data => data.version));
@@ -686,6 +701,32 @@ export class PatientViewPageStore {
         },
     });
 
+    readonly fetchAllMutationalSignatureCountMetaData = remoteData({
+        await: () => [this.fetchAllMutationalSignatureData],
+        invoke: async () => {
+            const mutationalSignatureCountStableIds = _.chain(
+                this.fetchAllMutationalSignatureData.result
+            )
+                .map((data: GenericAssayData) => data.stableId)
+                .uniq()
+                .filter(stableId =>
+                    stableId.includes(
+                        MutationalSignatureStableIdKeyWord.MutationalSignatureCountKeyWord
+                    )
+                )
+                .value();
+            if (mutationalSignatureCountStableIds.length > 0) {
+                return client.fetchGenericAssayMetaUsingPOST({
+                    genericAssayMetaFilter: {
+                        genericAssayStableIds: mutationalSignatureCountStableIds,
+                    } as GenericAssayMetaFilter,
+                });
+            } else {
+                return Promise.resolve([]);
+            }
+        },
+    });
+
     readonly mutationalSignatureMeta = remoteData<IMutationalSignatureMeta[]>(
         {
             await: () => [this.fetchAllMutationalSignatureContributionMetaData],
@@ -758,7 +799,7 @@ export class PatientViewPageStore {
             );
         },
     });
-    //TIM
+
     readonly hasMutationalSignatureData = remoteData({
         await: () => [this.fetchAllMutationalSignatureData],
         invoke: async () => {

@@ -106,16 +106,17 @@ export default class MutationalBarChart extends React.Component<
 
     @action formatLegendColor(data: any) {
         let labelsPresent = this.props.data.map(obj => {
-            return obj.mutationalSignatureType;
+            return obj.mutationalSignatureClass;
         });
+        console.log(labelsPresent);
         let dataLegend = data.filter((obj2: any) => {
-            if (labelsPresent.includes(obj2.mutationalSignatureClass)) {
+            if (labelsPresent.includes(obj2.name)) {
                 return obj2;
             }
         });
         let legend = dataLegend.map((obj: any) => {
             let entry = {
-                name: obj.mutationalSignatureClass,
+                name: obj.name,
                 symbol: { fill: obj.color },
             };
             return entry;
@@ -234,7 +235,7 @@ export default class MutationalBarChart extends React.Component<
                     )}
                     {!this.props.refStatus && (
                         <VictoryAxis
-                            domain={[0, 50]}
+                            domain={[0, 100]}
                             tickFormat={() => ''}
                             style={{
                                 axis: { stroke: 'black', strokeWidth: 2 },

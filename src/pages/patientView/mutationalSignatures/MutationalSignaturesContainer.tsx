@@ -123,22 +123,26 @@ export default class MutationalSignaturesContainer extends React.Component<
                             isLoading={false}
                             className="pull-left"
                         />
-                        <div
-                            style={{
-                                display: 'inline-block',
-                                width: '500',
-                                height: '600',
-                            }}
-                        >
-                            <MutationalBarChart
-                                signature={this.state.signatureProfile}
-                                height={600}
-                                width={900}
-                                refStatus={false}
-                                data={this.props.dataCount[this.props.version]}
-                                version={this.props.version}
-                            ></MutationalBarChart>
-                        </div>
+                        {this.props.dataCount && (
+                            <div
+                                style={{
+                                    display: 'inline-block',
+                                    width: '500',
+                                    height: '600',
+                                }}
+                            >
+                                <MutationalBarChart
+                                    signature={this.state.signatureProfile}
+                                    height={600}
+                                    width={900}
+                                    refStatus={false}
+                                    data={
+                                        this.props.dataCount[this.props.version]
+                                    }
+                                    version={this.props.version}
+                                ></MutationalBarChart>
+                            </div>
+                        )}
                         <ClinicalInformationMutationalSignatureTable
                             data={this.props.data[this.props.version]}
                             parentCallback={this.callbackFunction}
