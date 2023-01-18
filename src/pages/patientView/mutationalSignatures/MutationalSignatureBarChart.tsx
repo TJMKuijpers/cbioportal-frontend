@@ -10,6 +10,7 @@ import {
 } from 'victory';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react';
+import { IMutationalCounts } from 'shared/model/MutationalSignature';
 
 export type DataMutSig = {
     id: string;
@@ -25,13 +26,12 @@ export type DataTableSignature = {
     label: string;
     color: string;
 };
-
 export interface IMutationalBarChartProps {
     signature: string;
     width: number;
     height: number;
-    refstatus: boolean;
-    data: DataMutSig[];
+    refStatus: boolean;
+    data: IMutationalCounts[];
     version: string;
 }
 
@@ -71,9 +71,10 @@ const colorMap = [
     { name: 'microhomology deletion length 5+', color: '#4a235a' },
 ];
 
+// This function will need a reference signature
 export function transformMutationalSignatureData(dataset: any) {
-    let transformedDataSet = dataset.map((obj: DataMutSig) => {
-        var referenceTransformed = -Math.abs(obj.reference);
+    let transformedDataSet = dataset.map((obj: IMutationalCounts) => {
+        var referenceTransformed = -Math.abs(obj.count);
         return { ...obj, referenceTransformed };
     });
     return transformedDataSet;
@@ -82,19 +83,18 @@ export function transformMutationalSignatureData(dataset: any) {
 function getColorsForSignatures(dataset: any) {
     let colorTableData = dataset.map((obj: any) => {
         let colorIdentity = colorMap.filter(cmap => {
-            if (cmap.name === obj.label) {
+            if (cmap.name === obj.mutationalSignatureClass) {
                 return cmap.color;
             }
         });
+        let label = obj.mutationalSignatureClass;
         let colorValue =
             colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
-        return { ...obj, colorValue };
+        return { ...obj, colorValue, label };
     });
     return colorTableData;
 }
 
-// Mutational bar chart will visualize the mutation count per signature
-// Input: data object per signature with an id (base mutation) and a value (count)
 @observer
 export default class MutationalBarChart extends React.Component<
     IMutationalBarChartProps,
@@ -106,18 +106,34 @@ export default class MutationalBarChart extends React.Component<
 
     @action formatLegendColor(data: any) {
         let labelsPresent = this.props.data.map(obj => {
-            return obj.label;
+            return obj.mutationalSignatureType;
         });
         let dataLegend = data.filter((obj2: any) => {
-            if (labelsPresent.includes(obj2.name)) {
+            if (labelsPresent.includes(obj2.mutationalSignatureClass)) {
                 return obj2;
             }
         });
         let legend = dataLegend.map((obj: any) => {
-            let entry = { name: obj.name, symbol: { fill: obj.color } };
+            let entry = {
+                name: obj.mutationalSignatureClass,
+                symbol: { fill: obj.color },
+            };
             return entry;
         });
         return legend;
+    }
+    @action yAxisDomain(): number[] {
+        const maxValue = this.props.data.reduce(
+            (previous: any, current: any) => {
+                return current.count > previous.count ? current : previous;
+            }
+        );
+        const minValue = this.props.data.reduce(
+            (previous: any, current: any) => {
+                return current.count < previous.count ? current : previous;
+            }
+        );
+        return [minValue.count, maxValue.count];
     }
 
     public render() {
@@ -131,7 +147,7 @@ export default class MutationalBarChart extends React.Component<
                 >
                     <VictoryLegend
                         x={this.props.width / 2.5}
-                        y={this.props.refstatus ? 500 : 500}
+                        y={this.props.refStatus ? 500 : 500}
                         centerTitle
                         orientation="horizontal"
                         gutter={20}
@@ -151,7 +167,7 @@ export default class MutationalBarChart extends React.Component<
                         <VictoryBar
                             labelComponent={<VictoryTooltip />}
                             barRatio={0.8}
-                            barWidth={5}
+                            barWidth={10}
                             data={getColorsForSignatures(this.props.data)}
                             x="id"
                             y="count"
@@ -163,7 +179,7 @@ export default class MutationalBarChart extends React.Component<
                                 },
                             }}
                         />
-                        {this.props.refstatus && (
+                        {this.props.refStatus && (
                             <VictoryBar
                                 labelComponent={<VictoryTooltip />}
                                 barRatio={0.8}
@@ -183,7 +199,7 @@ export default class MutationalBarChart extends React.Component<
                             />
                         )}
                     </VictoryStack>
-                    {this.props.refstatus && (
+                    {this.props.refStatus && (
                         <VictoryAxis
                             dependentAxis
                             domain={[-100, 100]}
@@ -195,10 +211,10 @@ export default class MutationalBarChart extends React.Component<
                             }}
                         />
                     )}
-                    {!this.props.refstatus && (
+                    {!this.props.refStatus && (
                         <VictoryAxis
                             dependentAxis
-                            domain={[0, 100]}
+                            domain={this.yAxisDomain()}
                             label={'Mutation count'}
                             style={{
                                 axis: { stroke: 'black', strokeWidth: 1 },
@@ -207,7 +223,7 @@ export default class MutationalBarChart extends React.Component<
                             }}
                         />
                     )}
-                    {this.props.refstatus && (
+                    {this.props.refStatus && (
                         <VictoryAxis
                             domain={[0, 50]}
                             tickFormat={() => ''}
@@ -216,12 +232,12 @@ export default class MutationalBarChart extends React.Component<
                             }}
                         />
                     )}
-                    {!this.props.refstatus && (
+                    {!this.props.refStatus && (
                         <VictoryAxis
                             domain={[0, 50]}
                             tickFormat={() => ''}
                             style={{
-                                axis: { stroke: 'black', strokeWidth: 1 },
+                                axis: { stroke: 'black', strokeWidth: 2 },
                             }}
                         />
                     )}
