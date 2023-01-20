@@ -550,16 +550,19 @@ export class PatientViewPageStore {
                             MutationalSignatureStableIdKeyWord.MutationalSignatureCountKeyWord
                         )
                 );
-                // @ts-ignore
-                const signatureLabelMap = this.fetchAllMutationalSignatureCountMetaData!.result.map(
-                    obj => {
-                        let signatureId = obj.stableId;
-                        let signatureName = Object.values(
-                            obj.genericEntityMetaProperties
-                        )[0];
+                let signatureLabelMap = this.fetchAllMutationalSignatureCountMetaData.result!.map(
+                    (metaData: GenericAssayMeta) => {
+                        let meta = {} as IMutationalSignatureMeta;
+                        let name: string =
+                            'NAME' in metaData.genericEntityMetaProperties
+                                ? metaData.genericEntityMetaProperties['NAME']
+                                : '';
+                        const signatureId = metaData.stableId;
+                        let signatureClass = name.split(/\[(.*?)\]/)[1];
                         return {
                             stableId: signatureId,
-                            signatureName: signatureName,
+                            signatureLabel: name,
+                            signatureClass: signatureClass,
                         };
                     }
                 );
@@ -580,13 +583,13 @@ export class PatientViewPageStore {
                         mutationalSignatureChartData.count = parseFloat(
                             count.value
                         );
-                        mutationalSignatureChartData.mutationalSignatureClass =
-                            'C>A';
-                        mutationalSignatureChartData.mutationalSignatureType = signatureLabelMap
+                        mutationalSignatureChartData.mutationalSignatureClass = signatureLabelMap
                             .filter(obj => obj.stableId === count.stableId)
-                            .map(obj => obj.signatureName)[0];
+                            .map(obj => obj.signatureClass)[0];
+                        mutationalSignatureChartData.mutationalSignatureLabel = signatureLabelMap
+                            .filter(obj => obj.stableId === count.stableId)
+                            .map(obj => obj.signatureLabel)[0];
                         result.push(mutationalSignatureChartData);
-                        console.log(result);
                     }
                 }
                 return Promise.resolve(_.groupBy(result, data => data.version));

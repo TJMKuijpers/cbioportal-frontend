@@ -12,13 +12,6 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IMutationalCounts } from 'shared/model/MutationalSignature';
 
-export type DataMutSig = {
-    id: string;
-    count: number;
-    reference: number;
-    label: string;
-};
-
 export type DataTableSignature = {
     id: string;
     count: number;
@@ -35,7 +28,12 @@ export interface IMutationalBarChartProps {
     version: string;
 }
 
-const colorMap = [
+export interface colorMapProps {
+    name: string;
+    color: string;
+}
+
+const colorMap: colorMapProps[] = [
     { name: 'C>A', color: 'lightblue' },
     { name: 'C>G', color: 'darkblue' },
     { name: 'C>T', color: 'red' },
@@ -65,14 +63,14 @@ const colorMap = [
     { name: '1bp Insertion at repeats (3)', color: '#85c1e9' },
     { name: '1bp Insertion at repeats (4)', color: '#85c1e9' },
     { name: '1bp Insertion at repeats (5+)', color: '#3498db' },
-    { name: 'microhomology deletion length 2', color: '#c39bd3' },
-    { name: 'microhomology deletion length 3', color: '#9b59b6' },
-    { name: 'microhomology deletion length 4', color: '#7d3c98' },
-    { name: 'microhomology deletion length 5+', color: '#4a235a' },
+    { name: 'Microhomology deletion length 2', color: '#c39bd3' },
+    { name: 'Microhomology deletion length 3', color: '#9b59b6' },
+    { name: 'Microhomology deletion length 4', color: '#7d3c98' },
+    { name: 'Microhomology deletion length 5+', color: '#4a235a' },
 ];
 
 // This function will need a reference signature
-export function transformMutationalSignatureData(dataset: any) {
+export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
     let transformedDataSet = dataset.map((obj: IMutationalCounts) => {
         var referenceTransformed = -Math.abs(obj.count);
         return { ...obj, referenceTransformed };
@@ -80,14 +78,14 @@ export function transformMutationalSignatureData(dataset: any) {
     return transformedDataSet;
 }
 
-function getColorsForSignatures(dataset: any) {
+function getColorsForSignatures(dataset: IMutationalCounts[]) {
     let colorTableData = dataset.map((obj: any) => {
         let colorIdentity = colorMap.filter(cmap => {
             if (cmap.name === obj.mutationalSignatureClass) {
                 return cmap.color;
             }
         });
-        let label = obj.mutationalSignatureClass;
+        let label = obj.mutationalSignatureLabel;
         let colorValue =
             colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
         return { ...obj, colorValue, label };
@@ -104,11 +102,10 @@ export default class MutationalBarChart extends React.Component<
         super(props);
     }
 
-    @action formatLegendColor(data: any) {
+    @action formatLegendColor(data: colorMapProps[]) {
         let labelsPresent = this.props.data.map(obj => {
             return obj.mutationalSignatureClass;
         });
-        console.log(labelsPresent);
         let dataLegend = data.filter((obj2: any) => {
             if (labelsPresent.includes(obj2.name)) {
                 return obj2;
@@ -160,9 +157,12 @@ export default class MutationalBarChart extends React.Component<
                     <VictoryLabel
                         x={this.props.width / 2}
                         y={25}
-                        style={[{ fill: 'black', fontSize: 25 }]}
+                        style={[{ fill: 'black', fontSize: 18 }]}
                         textAnchor="middle"
-                        text={this.props.signature}
+                        text={
+                            'Mutational Signature of ' +
+                            this.props.data[0].patientId
+                        }
                     />
                     <VictoryStack>
                         <VictoryBar
