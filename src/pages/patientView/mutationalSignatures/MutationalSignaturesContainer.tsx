@@ -16,9 +16,8 @@ import {
     MutationalSignaturesVersion,
 } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import _ from 'lodash';
-import MutationalBarChart, {
-    DataMutSig,
-} from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
+import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
+import SignatureTextBox from 'pages/patientView/mutationalSignatures/SignatureTextBox';
 
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
@@ -27,8 +26,12 @@ export interface IMutationalSignaturesContainerProps {
     version: string;
     dataCount: { [version: string]: IMutationalCounts[] };
 }
-// use a state for the signature to update the signature based on
-
+const gridContainerElement = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gridGap: '20px',
+    width: '100%',
+};
 @observer
 export default class MutationalSignaturesContainer extends React.Component<
     IMutationalSignaturesContainerProps,
@@ -62,6 +65,18 @@ export default class MutationalSignaturesContainer extends React.Component<
             .uniq()
             .value();
     }
+    @observable urlSignature = '';
+    @observable descriptionSignature = '';
+
+    @computed get selectURLSignature(): string {
+        let urlLink = this.props.data[this.props.version][0].meta.url;
+        return urlLink;
+    }
+    @computed get selectDescriptionSignature(): string {
+        let description = this.props.data[this.props.version][0].meta
+            .description;
+        return description;
+    }
 
     @computed get selectedVersion(): string {
         // all versions is defined in the MutationalSignaturesVersion
@@ -79,6 +94,8 @@ export default class MutationalSignaturesContainer extends React.Component<
         this.state.signatureProfile = this.props.data[
             option.value
         ][0].meta.name;
+        this.selectDescriptionSignature;
+        this.selectURLSignature;
     }
     @action.bound changeSignature(name: string): void {
         this._selectedSignature = name;
@@ -115,38 +132,56 @@ export default class MutationalSignaturesContainer extends React.Component<
                         </div>
                     </div>
                 </div>
-
                 {this.props.data && (
                     <div>
-                        <FeatureTitle
-                            title="Mutational Signatures"
-                            isLoading={false}
-                            className="pull-left"
-                        />
                         {this.props.dataCount && (
-                            <div
-                                style={{
-                                    display: 'inline-block',
-                                    width: '500',
-                                    height: '600',
-                                }}
-                            >
-                                <MutationalBarChart
-                                    signature={this.state.signatureProfile}
-                                    height={600}
-                                    width={900}
-                                    refStatus={false}
-                                    data={
-                                        this.props.dataCount[this.props.version]
-                                    }
-                                    version={this.props.version}
-                                ></MutationalBarChart>
+                            <div style={gridContainerElement}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                >
+                                    <MutationalBarChart
+                                        signature={this.state.signatureProfile}
+                                        height={500}
+                                        width={600}
+                                        refStatus={false}
+                                        data={
+                                            this.props.dataCount[
+                                                this.props.version
+                                            ]
+                                        }
+                                        version={this.props.version}
+                                    ></MutationalBarChart>
+                                </div>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                >
+                                    <SignatureTextBox
+                                        visible={true}
+                                        height={300}
+                                        width={100}
+                                        description={
+                                            this.selectDescriptionSignature
+                                        }
+                                        url={this.selectURLSignature}
+                                        version={this.props.version}
+                                        signature={this.state.signatureProfile}
+                                    ></SignatureTextBox>
+                                </div>
                             </div>
                         )}
-                        <ClinicalInformationMutationalSignatureTable
-                            data={this.props.data[this.props.version]}
-                            parentCallback={this.callbackFunction}
-                        />
+
+                        <div>
+                            <ClinicalInformationMutationalSignatureTable
+                                data={this.props.data[this.props.version]}
+                                parentCallback={this.callbackFunction}
+                            />
+                        </div>
                     </div>
                 )}
             </div>

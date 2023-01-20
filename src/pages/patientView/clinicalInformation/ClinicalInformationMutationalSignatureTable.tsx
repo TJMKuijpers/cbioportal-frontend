@@ -35,6 +35,7 @@ export function prepareMutationalSignatureDataForTable(
 
     //group data by mutational signature
     //[{id: mutationalsignatureid, samples: [{}, {}]}]
+    console.log(mutationalSignatureData);
     let sampleInvertedDataByMutationalSignature: Array<any> = _(
         mutationalSignatureData
     )
