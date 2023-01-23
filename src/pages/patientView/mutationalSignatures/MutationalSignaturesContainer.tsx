@@ -134,7 +134,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                 </div>
                 {this.props.data && (
                     <div>
-                        {this.props.dataCount && (
+                        {!_.isEmpty(this.props.dataCount) && (
                             <div style={gridContainerElement}>
                                 <div
                                     style={{

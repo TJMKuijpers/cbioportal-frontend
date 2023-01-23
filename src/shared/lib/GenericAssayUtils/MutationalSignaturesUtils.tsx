@@ -181,6 +181,7 @@ export function retrieveMutationalSignatureVersionFromData(
         uniqueProfileVersion.includes('v2')
             ? 'v3'
             : uniqueProfileVersion[0]!;
+
     }
     return 'v2';
 }
