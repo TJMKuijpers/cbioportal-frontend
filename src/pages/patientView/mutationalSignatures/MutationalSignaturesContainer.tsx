@@ -60,15 +60,10 @@ export default class MutationalSignaturesContainer extends React.Component<
         // we know split will always have results
         // use uniq function to get all unique versions
         // not all patients have the newest mutational signatures --> check if data is present before giving the options
-        let possibleOptions = this.props.profiles.map(
-            profile => _.last(profile.molecularProfileId.split('_'))!
-        );
-        possibleOptions = possibleOptions.filter(item =>
-            Object.keys(this.props.data).includes(item)
-        );
-        return _.chain(possibleOptions)
-            .uniq()
-            .value();
+        let possibleOptions = this.props.profiles
+            .map(profile => _.last(profile.molecularProfileId.split('_'))!)
+            .filter(item => item in this.props.data);
+        return _.uniq(possibleOptions);
     }
     @observable urlSignature = '';
     @observable descriptionSignature = '';
@@ -149,8 +144,8 @@ export default class MutationalSignaturesContainer extends React.Component<
                                 >
                                     <MutationalBarChart
                                         signature={this.state.signatureProfile}
-                                        height={500}
-                                        width={600}
+                                        height={600}
+                                        width={700}
                                         refStatus={false}
                                         data={
                                             this.props.dataCount[
@@ -159,24 +154,6 @@ export default class MutationalSignaturesContainer extends React.Component<
                                         }
                                         version={this.props.version}
                                     ></MutationalBarChart>
-                                </div>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                >
-                                    <SignatureTextBox
-                                        visible={true}
-                                        height={300}
-                                        width={100}
-                                        description={
-                                            this.selectDescriptionSignature
-                                        }
-                                        url={this.selectURLSignature}
-                                        version={this.props.version}
-                                        signature={this.state.signatureProfile}
-                                    ></SignatureTextBox>
                                 </div>
                             </div>
                         )}

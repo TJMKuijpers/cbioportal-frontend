@@ -169,11 +169,11 @@ export function validateMutationalSignatureRawData(
 }
 
 export function retrieveMutationalSignatureVersionFromData(
-    SignatureProfiles: any[]
+    signatureProfiles: string[]
 ) {
     let valueToSet: string = 'v2';
     let uniqueProfileVersion = _.uniq(
-        SignatureProfiles.map(function(obj) {
+        signatureProfiles.map(function(obj) {
             return _.last(obj.split('_'));
         })
     );
@@ -183,9 +183,7 @@ export function retrieveMutationalSignatureVersionFromData(
             uniqueProfileVersion.includes('v3') &&
             uniqueProfileVersion.includes('v2')
         ) {
-            valueToSet = Object.values(MutationalSignaturesVersion)[
-                uniqueProfileVersion.indexOf('v3')
-            ];
+            valueToSet = 'v3';
         } else {
             let versionToSet = Object.values(
                 MutationalSignaturesVersion

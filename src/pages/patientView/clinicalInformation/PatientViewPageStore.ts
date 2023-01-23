@@ -552,15 +552,14 @@ export class PatientViewPageStore {
                 );
                 let signatureLabelMap = this.fetchAllMutationalSignatureCountMetaData.result!.map(
                     (metaData: GenericAssayMeta) => {
-                        let meta = {} as IMutationalSignatureMeta;
-                        let nameSig: string =
+                        const nameSig: string =
                             'MUTATION_TYPE' in
                             metaData.genericEntityMetaProperties
                                 ? metaData.genericEntityMetaProperties[
                                       'MUTATION_TYPE'
                                   ]
                                 : '';
-                        let classSig: string =
+                        const classSig: string =
                             'MUTATION_CLASS' in
                             metaData.genericEntityMetaProperties
                                 ? metaData.genericEntityMetaProperties[
@@ -823,18 +822,19 @@ export class PatientViewPageStore {
     });
 
     @observable _selectedMutationalSignature = '';
-    @observable _selectedMutationalSignatureVersion: string =
-        MutationalSignaturesVersion.V2;
+    @observable _selectedMutationalSignatureVersion: string = '';
 
     @computed get selectedMutationalSignatureVersion() {
-        if (initialLoad && this.fetchAllMutationalSignatureData.isComplete) {
-            let versionPresent = retrieveMutationalSignatureVersionFromData(
+        if (
+            this._selectedMutationalSignatureVersion === '' &&
+            this.fetchAllMutationalSignatureData.isComplete
+        ) {
+            const versionPresent = retrieveMutationalSignatureVersionFromData(
                 this.fetchAllMutationalSignatureData.result.map(
                     profile => profile.molecularProfileId
                 )
             );
             this.setMutationalSignaturesVersion(versionPresent);
-            initialLoad = false;
         }
         return this._selectedMutationalSignatureVersion;
     }

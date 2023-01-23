@@ -73,7 +73,7 @@ const colorMap: colorMapProps[] = [
 // This function will need a reference signature
 export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
     let transformedDataSet = dataset.map((obj: IMutationalCounts) => {
-        var referenceTransformed = -Math.abs(obj.count);
+        let referenceTransformed = -Math.abs(obj.count);
         return { ...obj, referenceTransformed };
     });
     return transformedDataSet;
@@ -144,18 +144,17 @@ export default class MutationalBarChart extends React.Component<
             <div>
                 <VictoryChart
                     domainPadding={10}
-                    padding={{ top: 30, bottom: 100, right: 50, left: 50 }}
+                    padding={{ top: 30, bottom: 100, right: 250, left: 60 }}
                     height={this.props.height}
                     width={this.props.width}
                 >
                     <VictoryLegend
-                        x={this.props.width / 5}
-                        y={this.props.refStatus ? 400 : 400}
+                        x={this.props.width - 250}
+                        y={this.props.refStatus ? 50 : 50}
                         centerTitle
-                        orientation="horizontal"
-                        gutter={20}
-                        style={{ title: { fontSize: 20 } }}
-                        itemsPerRow={6}
+                        symbolSpacer={8}
+                        orientation="vertical"
+                        style={{ title: { fontSize: 18 } }}
                         data={this.formatLegendColor(colorMap)}
                     />
 
