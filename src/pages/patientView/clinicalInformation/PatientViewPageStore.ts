@@ -543,7 +543,7 @@ export class PatientViewPageStore {
                 this.mutationData,
                 this.fetchAllMutationalSignatureCountMetaData,
             ],
-            invoke: () => {
+            invoke: async () => {
                 const countData = this.fetchAllMutationalSignatureData.result.filter(
                     data =>
                         data.molecularProfileId.includes(
@@ -553,16 +553,25 @@ export class PatientViewPageStore {
                 let signatureLabelMap = this.fetchAllMutationalSignatureCountMetaData.result!.map(
                     (metaData: GenericAssayMeta) => {
                         let meta = {} as IMutationalSignatureMeta;
-                        let name: string =
-                            'NAME' in metaData.genericEntityMetaProperties
-                                ? metaData.genericEntityMetaProperties['NAME']
+                        let nameSig: string =
+                            'MUTATION_TYPE' in
+                            metaData.genericEntityMetaProperties
+                                ? metaData.genericEntityMetaProperties[
+                                      'MUTATION_TYPE'
+                                  ]
+                                : '';
+                        let classSig: string =
+                            'MUTATION_CLASS' in
+                            metaData.genericEntityMetaProperties
+                                ? metaData.genericEntityMetaProperties[
+                                      'MUTATION_CLASS'
+                                  ]
                                 : '';
                         const signatureId = metaData.stableId;
-                        let signatureClass = name.split(/\[(.*?)\]/)[1];
                         return {
                             stableId: signatureId,
-                            signatureLabel: name,
-                            signatureClass: signatureClass,
+                            signatureLabel: nameSig,
+                            signatureClass: classSig,
                         };
                     }
                 );

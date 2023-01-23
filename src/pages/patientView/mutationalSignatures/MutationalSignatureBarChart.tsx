@@ -8,8 +8,9 @@ import {
     VictoryTooltip,
     VictoryLegend,
 } from 'victory';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action } from 'mobx';
 import { observer } from 'mobx-react';
+import _ from 'lodash';
 import { IMutationalCounts } from 'shared/model/MutationalSignature';
 
 export type DataTableSignature = {
@@ -55,18 +56,18 @@ const colorMap: colorMapProps[] = [
     { name: '1bp Deletion (T)', color: '#d68910' },
     { name: '1bp Insertion (C)', color: '#82E0AA' },
     { name: '1bp Insertion (C)', color: '#28b463' },
-    { name: '1bp deletion at repeats (2)', color: '#f1948a' },
-    { name: '1bp deletion at repeats (3)', color: '#ec7063' },
-    { name: '1bp deletion at repeats (4)', color: '#e74c3c' },
-    { name: '1bp deletion at repeats (5+)', color: '#cb4335' },
-    { name: '1bp Insertion at repeats (2)', color: '#aed6f1' },
-    { name: '1bp Insertion at repeats (3)', color: '#85c1e9' },
-    { name: '1bp Insertion at repeats (4)', color: '#85c1e9' },
-    { name: '1bp Insertion at repeats (5+)', color: '#3498db' },
-    { name: 'Microhomology deletion length 2', color: '#c39bd3' },
-    { name: 'Microhomology deletion length 3', color: '#9b59b6' },
-    { name: 'Microhomology deletion length 4', color: '#7d3c98' },
-    { name: 'Microhomology deletion length 5+', color: '#4a235a' },
+    { name: '2bp deletion at repeats', color: '#f1948a' },
+    { name: '3bp deletion at repeats', color: '#ec7063' },
+    { name: '4bp deletion at repeats', color: '#e74c3c' },
+    { name: '5bp deletion at repeats', color: '#cb4335' },
+    { name: '2bp Insertion at repeats', color: '#aed6f1' },
+    { name: '3bp Insertion at repeats', color: '#85c1e9' },
+    { name: '4bp Insertion at repeats', color: '#85c1e9' },
+    { name: '5bp Insertion at repeats', color: '#3498db' },
+    { name: 'Microhomology (Deletion length 2)', color: '#c39bd3' },
+    { name: 'Microhomology (Deletion length 3)', color: '#9b59b6' },
+    { name: 'Microhomology (Deletion length 4)', color: '#7d3c98' },
+    { name: 'Microhomology (Deletion length 5+)', color: '#4a235a' },
 ];
 
 // This function will need a reference signature
@@ -78,7 +79,7 @@ export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
     return transformedDataSet;
 }
 
-function getColorsForSignatures(dataset: IMutationalCounts[]) {
+export function getColorsForSignatures(dataset: IMutationalCounts[]) {
     let colorTableData = dataset.map((obj: any) => {
         let colorIdentity = colorMap.filter(cmap => {
             if (cmap.name === obj.mutationalSignatureClass) {
@@ -90,7 +91,11 @@ function getColorsForSignatures(dataset: IMutationalCounts[]) {
             colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
         return { ...obj, colorValue, label };
     });
-    return colorTableData;
+    const colorTableDataSorted = _.sortBy(
+        colorTableData,
+        'mutationalSignatureClass'
+    );
+    return colorTableDataSorted;
 }
 
 @observer
@@ -144,8 +149,8 @@ export default class MutationalBarChart extends React.Component<
                     width={this.props.width}
                 >
                     <VictoryLegend
-                        x={this.props.width / 2.5}
-                        y={this.props.refStatus ? 500 : 500}
+                        x={this.props.width / 5}
+                        y={this.props.refStatus ? 400 : 400}
                         centerTitle
                         orientation="horizontal"
                         gutter={20}
@@ -168,15 +173,15 @@ export default class MutationalBarChart extends React.Component<
                         <VictoryBar
                             labelComponent={<VictoryTooltip />}
                             barRatio={0.8}
-                            barWidth={10}
+                            barWidth={5}
                             data={getColorsForSignatures(this.props.data)}
-                            x="id"
+                            x="label"
                             y="count"
                             style={{
                                 data: {
                                     fill: (d: any) => d.colorValue,
                                     stroke: 'black',
-                                    strokeWidth: 0.8,
+                                    strokeWidth: 0.4,
                                 },
                             }}
                         />
@@ -184,7 +189,7 @@ export default class MutationalBarChart extends React.Component<
                             <VictoryBar
                                 labelComponent={<VictoryTooltip />}
                                 barRatio={0.8}
-                                barWidth={5}
+                                barWidth={1}
                                 data={transformMutationalSignatureData(
                                     this.props.data
                                 )}
@@ -226,6 +231,7 @@ export default class MutationalBarChart extends React.Component<
                     )}
                     {this.props.refStatus && (
                         <VictoryAxis
+                            offsetX={70}
                             domain={[0, 50]}
                             tickFormat={() => ''}
                             style={{

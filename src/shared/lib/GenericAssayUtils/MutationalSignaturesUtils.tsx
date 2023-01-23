@@ -180,8 +180,8 @@ export function retrieveMutationalSignatureVersionFromData(
     if (uniqueProfileVersion !== undefined) {
         // give priority to version 3 over version 2
         if (
-            uniqueProfileVersion.indexOf('v3') !== -1 &&
-            uniqueProfileVersion.indexOf('v2') !== -1
+            uniqueProfileVersion.includes('v3') &&
+            uniqueProfileVersion.includes('v2')
         ) {
             valueToSet = Object.values(MutationalSignaturesVersion)[
                 uniqueProfileVersion.indexOf('v3')
