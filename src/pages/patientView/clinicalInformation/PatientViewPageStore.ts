@@ -552,15 +552,14 @@ export class PatientViewPageStore {
                 );
                 let signatureLabelMap = this.fetchAllMutationalSignatureCountMetaData.result!.map(
                     (metaData: GenericAssayMeta) => {
-                        let meta = {} as IMutationalSignatureMeta;
-                        let nameSig: string =
+                        const nameSig: string =
                             'MUTATION_TYPE' in
                             metaData.genericEntityMetaProperties
                                 ? metaData.genericEntityMetaProperties[
                                       'MUTATION_TYPE'
                                   ]
                                 : '';
-                        let classSig: string =
+                        const classSig: string =
                             'MUTATION_CLASS' in
                             metaData.genericEntityMetaProperties
                                 ? metaData.genericEntityMetaProperties[

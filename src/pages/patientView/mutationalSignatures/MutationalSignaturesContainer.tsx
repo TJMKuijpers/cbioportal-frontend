@@ -144,8 +144,8 @@ export default class MutationalSignaturesContainer extends React.Component<
                                 >
                                     <MutationalBarChart
                                         signature={this.state.signatureProfile}
-                                        height={500}
-                                        width={600}
+                                        height={600}
+                                        width={700}
                                         refStatus={false}
                                         data={
                                             this.props.dataCount[
@@ -154,24 +154,6 @@ export default class MutationalSignaturesContainer extends React.Component<
                                         }
                                         version={this.props.version}
                                     ></MutationalBarChart>
-                                </div>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                >
-                                    <SignatureTextBox
-                                        visible={true}
-                                        height={300}
-                                        width={100}
-                                        description={
-                                            this.selectDescriptionSignature
-                                        }
-                                        url={this.selectURLSignature}
-                                        version={this.props.version}
-                                        signature={this.state.signatureProfile}
-                                    ></SignatureTextBox>
                                 </div>
                             </div>
                         )}
