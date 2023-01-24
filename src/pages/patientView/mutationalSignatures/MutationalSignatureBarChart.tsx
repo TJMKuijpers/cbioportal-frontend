@@ -54,7 +54,7 @@ const colorMap: colorMapProps[] = [
     { name: '1bp deletion (C)', color: '#f39c12' },
     { name: '1bp deletion (T)', color: '#d68910' },
     { name: '1bp insertion (C)', color: '#82E0AA' },
-    { name: '1bp insertion (C)', color: '#28b463' },
+    { name: '1bp insertion (T)', color: '#28b463' },
     { name: '2bp deletion at repeats', color: '#f1948a' },
     { name: '3bp deletion at repeats', color: '#ec7063' },
     { name: '4bp deletion at repeats', color: '#e74c3c' },
