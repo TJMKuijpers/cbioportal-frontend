@@ -835,8 +835,7 @@ export class PatientViewPageStore {
             );
         },
     });
-
-
+    
 
     @computed get selectedMutationalSignatureVersion() {
         return (

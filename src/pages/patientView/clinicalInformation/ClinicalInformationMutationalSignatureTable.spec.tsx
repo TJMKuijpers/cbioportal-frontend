@@ -89,6 +89,7 @@ describe('ClinicalInformationMutationalSignatureTable', () => {
                         confidence: 0.8,
                     },
                 },
+                url: '',
             },
             {
                 name: 'Mutational Signature 2',
@@ -98,6 +99,7 @@ describe('ClinicalInformationMutationalSignatureTable', () => {
                         confidence: 0.4,
                     },
                 },
+                url: '',
             },
         ]);
     });

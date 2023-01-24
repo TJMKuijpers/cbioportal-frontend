@@ -13,13 +13,6 @@ import { observer } from 'mobx-react';
 import _ from 'lodash';
 import { IMutationalCounts } from 'shared/model/MutationalSignature';
 
-export type DataTableSignature = {
-    id: string;
-    count: number;
-    reference: number;
-    label: string;
-    color: string;
-};
 export interface IMutationalBarChartProps {
     signature: string;
     width: number;
@@ -27,6 +20,11 @@ export interface IMutationalBarChartProps {
     refStatus: boolean;
     data: IMutationalCounts[];
     version: string;
+}
+
+export interface IColorDataTable extends IMutationalCounts {
+    colorValue: string;
+    label: string;
 }
 
 export interface colorMapProps {
@@ -52,10 +50,11 @@ const colorMap: colorMapProps[] = [
     { name: 'TC>NN', color: 'orange' },
     { name: 'TG>NN', color: 'lila' },
     { name: 'TT>NN', color: 'purple' },
-    { name: '1bp Deletion (C)', color: '#f39c12' },
-    { name: '1bp Deletion (T)', color: '#d68910' },
-    { name: '1bp Insertion (C)', color: '#82E0AA' },
-    { name: '1bp Insertion (C)', color: '#28b463' },
+    { name: 'GC>NN', color: 'gold' },
+    { name: '1bp deletion (C)', color: '#f39c12' },
+    { name: '1bp deletion (T)', color: '#d68910' },
+    { name: '1bp insertion (C)', color: '#82E0AA' },
+    { name: '1bp insertion (C)', color: '#28b463' },
     { name: '2bp deletion at repeats', color: '#f1948a' },
     { name: '3bp deletion at repeats', color: '#ec7063' },
     { name: '4bp deletion at repeats', color: '#e74c3c' },
@@ -67,12 +66,12 @@ const colorMap: colorMapProps[] = [
     { name: 'Microhomology (Deletion length 2)', color: '#c39bd3' },
     { name: 'Microhomology (Deletion length 3)', color: '#9b59b6' },
     { name: 'Microhomology (Deletion length 4)', color: '#7d3c98' },
-    { name: 'Microhomology (Deletion length 5+)', color: '#4a235a' },
+    { name: 'Microhomology (Deletion length 5)', color: '#4a235a' },
 ];
 
 // This function will need a reference signature
 export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
-    let transformedDataSet = dataset.map((obj: IMutationalCounts) => {
+    const transformedDataSet = dataset.map((obj: IMutationalCounts) => {
         let referenceTransformed = -Math.abs(obj.count);
         return { ...obj, referenceTransformed };
     });
@@ -80,14 +79,14 @@ export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
 }
 
 export function getColorsForSignatures(dataset: IMutationalCounts[]) {
-    let colorTableData = dataset.map((obj: any) => {
+    const colorTableData = dataset.map((obj: IMutationalCounts) => {
         let colorIdentity = colorMap.filter(cmap => {
             if (cmap.name === obj.mutationalSignatureClass) {
                 return cmap.color;
             }
         });
-        let label = obj.mutationalSignatureLabel;
-        let colorValue =
+        const label = obj.mutationalSignatureLabel;
+        const colorValue =
             colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
         return { ...obj, colorValue, label };
     });
@@ -111,12 +110,12 @@ export default class MutationalBarChart extends React.Component<
         let labelsPresent = this.props.data.map(obj => {
             return obj.mutationalSignatureClass;
         });
-        let dataLegend = data.filter((obj2: any) => {
+        let dataLegend = data.filter((obj2: colorMapProps) => {
             if (labelsPresent.includes(obj2.name)) {
                 return obj2;
             }
         });
-        let legend = dataLegend.map((obj: any) => {
+        let legend = dataLegend.map((obj: colorMapProps) => {
             let entry = {
                 name: obj.name,
                 symbol: { fill: obj.color },
@@ -127,16 +126,16 @@ export default class MutationalBarChart extends React.Component<
     }
     @action yAxisDomain(): number[] {
         const maxValue = this.props.data.reduce(
-            (previous: any, current: any) => {
+            (previous: IMutationalCounts, current: IMutationalCounts) => {
                 return current.count > previous.count ? current : previous;
             }
         );
         const minValue = this.props.data.reduce(
-            (previous: any, current: any) => {
+            (previous: IMutationalCounts, current: IMutationalCounts) => {
                 return current.count < previous.count ? current : previous;
             }
         );
-        return [minValue.count, maxValue.count];
+        return [minValue.count, maxValue.count + 0.1 * maxValue.count];
     }
 
     public render() {
@@ -144,24 +143,23 @@ export default class MutationalBarChart extends React.Component<
             <div>
                 <VictoryChart
                     domainPadding={10}
-                    padding={{ top: 30, bottom: 100, right: 250, left: 60 }}
+                    padding={{ top: 30, bottom: 10, right: 250, left: 60 }}
                     height={this.props.height}
                     width={this.props.width}
                 >
                     <VictoryLegend
-                        x={this.props.width - 250}
-                        y={this.props.refStatus ? 50 : 50}
-                        centerTitle
+                        x={this.props.width - 240}
+                        y={10}
                         symbolSpacer={8}
                         orientation="vertical"
-                        style={{ title: { fontSize: 18 } }}
+                        style={{ labels: { fontSize: 8 } }}
                         data={this.formatLegendColor(colorMap)}
                     />
 
                     <VictoryLabel
                         x={this.props.width / 2}
                         y={25}
-                        style={[{ fill: 'black', fontSize: 18 }]}
+                        style={[{ fill: 'black', fontSize: 12 }]}
                         textAnchor="middle"
                         text={
                             'Mutational Signature of ' +
@@ -178,7 +176,7 @@ export default class MutationalBarChart extends React.Component<
                             y="count"
                             style={{
                                 data: {
-                                    fill: (d: any) => d.colorValue,
+                                    fill: (d: IColorDataTable) => d.colorValue,
                                     stroke: 'black',
                                     strokeWidth: 0.4,
                                 },
