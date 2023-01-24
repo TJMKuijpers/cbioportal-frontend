@@ -60,13 +60,13 @@ export default class MutationalSignaturesContainer extends React.Component<
         // we know split will always have results
         // use uniq function to get all unique versions
         // not all patients have the newest mutational signatures --> check if data is present before giving the options
-        let possibleOptions = this.props.profiles
+        const possibleOptions = this.props.profiles
             .map(profile => _.last(profile.molecularProfileId.split('_'))!)
             .filter(item => item in this.props.data);
         return _.uniq(possibleOptions);
     }
-    @observable urlSignature = '';
-    @observable descriptionSignature = '';
+    @observable urlSignature: string;
+    @observable descriptionSignature: string;
 
     @computed get selectURLSignature(): string {
         let urlLink = this.props.data[this.props.version][0].meta.url;
@@ -135,29 +135,15 @@ export default class MutationalSignaturesContainer extends React.Component<
                 {this.props.data && (
                     <div>
                         {!_.isEmpty(this.props.dataCount) && (
-                            <div style={gridContainerElement}>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                >
-                                    <MutationalBarChart
-                                        signature={this.state.signatureProfile}
-                                        height={600}
-                                        width={700}
-                                        refStatus={false}
-                                        data={
-                                            this.props.dataCount[
-                                                this.props.version
-                                            ]
-                                        }
-                                        version={this.props.version}
-                                    ></MutationalBarChart>
-                                </div>
-                            </div>
+                            <MutationalBarChart
+                                signature={this.state.signatureProfile}
+                                height={220}
+                                width={800}
+                                refStatus={false}
+                                data={this.props.dataCount[this.props.version]}
+                                version={this.props.version}
+                            ></MutationalBarChart>
                         )}
-
                         <div>
                             <ClinicalInformationMutationalSignatureTable
                                 data={this.props.data[this.props.version]}

@@ -170,9 +170,9 @@ export function validateMutationalSignatureRawData(
 
 export function retrieveMutationalSignatureVersionFromData(
     signatureProfiles: string[]
-) {
+): string {
     let valueToSet: string = 'v2';
-    let uniqueProfileVersion = _.uniq(
+    const uniqueProfileVersion = _.uniq(
         signatureProfiles.map(function(obj) {
             return _.last(obj.split('_'));
         })
@@ -185,7 +185,9 @@ export function retrieveMutationalSignatureVersionFromData(
         ) {
             valueToSet = 'v3';
         } else {
-            let versionToSet = Object.values(
+            // Can we make this easier? (so just select the version present
+            // To also take into account when there are version outside the enumType)
+            const versionToSet = Object.values(
                 MutationalSignaturesVersion
             ).indexOf(
                 (uniqueProfileVersion[0] as unknown) as MutationalSignaturesVersion

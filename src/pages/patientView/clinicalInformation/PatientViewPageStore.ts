@@ -822,11 +822,11 @@ export class PatientViewPageStore {
     });
 
     @observable _selectedMutationalSignature = '';
-    @observable _selectedMutationalSignatureVersion: string = '';
+    @observable _selectedMutationalSignatureVersion: string;
 
     @computed get selectedMutationalSignatureVersion() {
         if (
-            this._selectedMutationalSignatureVersion === '' &&
+            this._selectedMutationalSignatureVersion === undefined &&
             this.fetchAllMutationalSignatureData.isComplete
         ) {
             const versionPresent = retrieveMutationalSignatureVersionFromData(

@@ -26,6 +26,7 @@ interface IMutationalSignatureRow {
             confidence: number;
         };
     };
+    url: string;
 }
 
 export function prepareMutationalSignatureDataForTable(
@@ -44,15 +45,17 @@ export function prepareMutationalSignatureDataForTable(
         .map((mutationalSignatureSampleData, name) => ({
             name,
             samples: mutationalSignatureSampleData,
+            url: mutationalSignatureSampleData[0].meta.url,
         }))
         .value();
-
     for (const mutationalSignature of sampleInvertedDataByMutationalSignature) {
         let mutationalSignatureRowForTable: IMutationalSignatureRow = {
             name: '',
             sampleValues: {},
+            url: '',
         };
         mutationalSignatureRowForTable.name = mutationalSignature.name;
+        mutationalSignatureRowForTable.url = mutationalSignature.url;
         for (const sample of mutationalSignature.samples) {
             mutationalSignatureRowForTable.sampleValues[sample.sampleId] = {
                 value: sample.value,
@@ -103,12 +106,14 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
                 name: 'Mutational Signature',
                 render: (data: IMutationalSignatureRow) => (
                     <span
-                        onClick={this.getMutationalSignatureProfileData.bind(
-                            data
-                        )}
+                        //onClick={this.getMutationalSignatureProfileData.bind(
+                        //    data
+                        //)}
                         id={'spanSignatureName'}
                     >
-                        {data[this.firstCol]}
+                        <a href={data.url} target={'_blank'}>
+                            {data[this.firstCol]}
+                        </a>
                     </span>
                 ),
                 download: (data: IMutationalSignatureRow) =>
