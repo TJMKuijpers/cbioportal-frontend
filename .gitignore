@@ -64,3 +64,4 @@ end
 e2e-localdb-workspace/
 junit.xml
 cbioportal-frontend/Dockerfile
+Dockerfile
