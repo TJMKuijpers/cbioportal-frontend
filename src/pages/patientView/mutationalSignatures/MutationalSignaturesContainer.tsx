@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Observer, observer } from 'mobx-react';
 import { computed, action, makeObservable, observable } from 'mobx';
-import autobind from 'autobind-decorator';
-import FeatureTitle from 'shared/components/featureTitle/FeatureTitle';
 import {
     IMutationalSignature,
     IMutationalCounts,
@@ -26,12 +24,7 @@ export interface IMutationalSignaturesContainerProps {
     version: string;
     dataCount: { [version: string]: IMutationalCounts[] };
 }
-const gridContainerElement = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gridGap: '20px',
-    width: '100%',
-};
+
 @observer
 export default class MutationalSignaturesContainer extends React.Component<
     IMutationalSignaturesContainerProps,

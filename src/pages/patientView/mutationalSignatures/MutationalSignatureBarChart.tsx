@@ -22,7 +22,7 @@ export interface IMutationalBarChartProps {
     version: string;
 }
 
-export interface IColorDataTable extends IMutationalCounts {
+export interface IColorDataBar extends IMutationalCounts {
     colorValue: string;
     label: string;
 }
@@ -59,10 +59,10 @@ const colorMap: colorMapProps[] = [
     { name: '3bp deletion at repeats', color: '#ec7063' },
     { name: '4bp deletion at repeats', color: '#e74c3c' },
     { name: '5bp deletion at repeats', color: '#cb4335' },
-    { name: '2bp Insertion at repeats', color: '#aed6f1' },
-    { name: '3bp Insertion at repeats', color: '#85c1e9' },
-    { name: '4bp Insertion at repeats', color: '#85c1e9' },
-    { name: '5bp Insertion at repeats', color: '#3498db' },
+    { name: '2bp insertion at repeats', color: '#aed6f1' },
+    { name: '3bp insertion at repeats', color: '#85c1e9' },
+    { name: '4bp insertion at repeats', color: '#85c1e9' },
+    { name: '5bp insertion at repeats', color: '#3498db' },
     { name: 'Microhomology (Deletion length 2)', color: '#c39bd3' },
     { name: 'Microhomology (Deletion length 3)', color: '#9b59b6' },
     { name: 'Microhomology (Deletion length 4)', color: '#7d3c98' },
@@ -90,6 +90,7 @@ export function getColorsForSignatures(dataset: IMutationalCounts[]) {
             colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
         return { ...obj, colorValue, label };
     });
+    console.log(colorTableData);
     const colorTableDataSorted = _.sortBy(
         colorTableData,
         'mutationalSignatureClass'
@@ -150,22 +151,13 @@ export default class MutationalBarChart extends React.Component<
                     <VictoryLegend
                         x={this.props.width - 240}
                         y={10}
-                        symbolSpacer={8}
+                        symbolSpacer={4}
+                        itemsPerRow={10}
                         orientation="vertical"
-                        style={{ labels: { fontSize: 8 } }}
+                        style={{ labels: { fontSize: 6 } }}
                         data={this.formatLegendColor(colorMap)}
                     />
 
-                    <VictoryLabel
-                        x={this.props.width / 2}
-                        y={25}
-                        style={[{ fill: 'black', fontSize: 12 }]}
-                        textAnchor="middle"
-                        text={
-                            'Mutational Signature of ' +
-                            this.props.data[0].patientId
-                        }
-                    />
                     <VictoryStack>
                         <VictoryBar
                             labelComponent={<VictoryTooltip />}
@@ -176,7 +168,7 @@ export default class MutationalBarChart extends React.Component<
                             y="count"
                             style={{
                                 data: {
-                                    fill: (d: IColorDataTable) => d.colorValue,
+                                    fill: (d: IColorDataBar) => d.colorValue,
                                     stroke: 'black',
                                     strokeWidth: 0.4,
                                 },
@@ -210,7 +202,7 @@ export default class MutationalBarChart extends React.Component<
                             style={{
                                 axis: { stroke: 'black', strokeWidth: 1 },
                                 grid: { stroke: 'grey', strokeWidth: 0.5 },
-                                axisLabel: { padding: 40 },
+                                axisLabel: { fontSize: 8, padding: 30 },
                             }}
                         />
                     )}
@@ -222,7 +214,8 @@ export default class MutationalBarChart extends React.Component<
                             style={{
                                 axis: { stroke: 'black', strokeWidth: 1 },
                                 grid: { stroke: 'grey', strokeWidth: 0.5 },
-                                axisLabel: { padding: 40 },
+                                axisLabel: { fontSize: 8, padding: 30 },
+                                tickLabels: { fontSize: 8, padding: 5 },
                             }}
                         />
                     )}
@@ -242,6 +235,8 @@ export default class MutationalBarChart extends React.Component<
                             tickFormat={() => ''}
                             style={{
                                 axis: { stroke: 'black', strokeWidth: 2 },
+                                axisLabel: { fontSize: 8, padding: 30 },
+                                tickLabels: { fontSize: 8, padding: 5 },
                             }}
                         />
                     )}
