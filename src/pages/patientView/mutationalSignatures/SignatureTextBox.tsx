@@ -3,6 +3,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { boolean, number, string } from 'yargs';
 import { IMutationalSignature } from 'shared/model/MutationalSignature';
+import { adjustVisibility } from 'shared/components/alterationsTableUtils';
 
 export interface ISignatureTextBoXProps {
     visible: boolean;
@@ -10,14 +11,23 @@ export interface ISignatureTextBoXProps {
     width: number;
     url: string;
     description: string;
-    version: string;
     signature: string;
+    parentCallback: (childData: string, visibility: boolean) => void;
 }
 
 export default class SignatureTextBox extends React.Component<
     ISignatureTextBoXProps,
     {}
 > {
+    @observable selectedSignature: string = '';
+    sendData = () => {
+        this.props.parentCallback(this.props.signature, false);
+    };
+    @action.bound closeModal() {
+        this.sendData();
+        console.log('function called');
+    }
+
     public render() {
         return (
             <div
@@ -25,7 +35,7 @@ export default class SignatureTextBox extends React.Component<
                     position: 'fixed',
                     top: '50%',
                     left: '50%',
-                    transform: 'translate(-75%,50%)',
+                    transform: 'translate(-75%,0)',
                 }}
             >
                 {this.props.visible && (
@@ -39,6 +49,17 @@ export default class SignatureTextBox extends React.Component<
                             padding: '5px',
                         }}
                     >
+                        <div
+                            style={{
+                                float: 'right',
+                                border: '0px #bacdd8',
+                                color: '#bacdd8',
+                            }}
+                        >
+                            <button onClick={this.closeModal.bind(this)}>
+                                X
+                            </button>
+                        </div>
                         <div>
                             <h4>
                                 <b>Signature:</b>

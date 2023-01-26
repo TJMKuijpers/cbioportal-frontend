@@ -69,7 +69,6 @@ const colorMap: colorMapProps[] = [
     { name: 'Microhomology (Deletion length 5)', color: '#4a235a' },
 ];
 
-// This function will need a reference signature
 export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
     const transformedDataSet = dataset.map((obj: IMutationalCounts) => {
         let referenceTransformed = -Math.abs(obj.count);
@@ -80,22 +79,31 @@ export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
 
 export function getColorsForSignatures(dataset: IMutationalCounts[]) {
     const colorTableData = dataset.map((obj: IMutationalCounts) => {
-        let colorIdentity = colorMap.filter(cmap => {
-            if (cmap.name === obj.mutationalSignatureClass) {
-                return cmap.color;
-            }
-        });
-        const label = obj.mutationalSignatureLabel;
-        const colorValue =
-            colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
-        return { ...obj, colorValue, label };
+        if (obj.hasOwnProperty('mutationalSignatureClass')) {
+            let colorIdentity = colorMap.filter(cmap => {
+                if (cmap.name === obj.mutationalSignatureClass) {
+                    return cmap.color;
+                }
+            });
+            const label = obj.mutationalSignatureLabel;
+            const colorValue =
+                colorIdentity.length > 0 ? colorIdentity[0].color : '#EE4B2B';
+            return { ...obj, colorValue, label };
+        } else {
+            const label = '';
+            const colorValue = '#EE4B2B';
+            return { ...obj, colorValue, label };
+        }
     });
-    console.log(colorTableData);
-    const colorTableDataSorted = _.sortBy(
-        colorTableData,
-        'mutationalSignatureClass'
-    );
-    return colorTableDataSorted;
+    if (colorTableData.hasOwnProperty('mutationalSignatureClass')) {
+        const colorTableDataSorted = _.sortBy(
+            colorTableData,
+            'mutationalSignatureClass'
+        );
+        return colorTableDataSorted;
+    } else {
+        return colorTableData;
+    }
 }
 
 @observer
