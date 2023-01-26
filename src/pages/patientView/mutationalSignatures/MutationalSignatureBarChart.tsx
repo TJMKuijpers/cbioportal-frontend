@@ -168,7 +168,14 @@ export default class MutationalBarChart extends React.Component<
 
                     <VictoryStack>
                         <VictoryBar
-                            labelComponent={<VictoryTooltip />}
+                            labelComponent={<VictoryTooltip style={{ fontSize: "7px" }}
+                                                            cornerRadius={3}
+                                                            pointerLength={0}
+                                                            flyoutStyle={{
+                                                                stroke: "#bacdd8",
+                                                                strokeWidth: 1,
+                                                                fill: "white"
+                                                            }} />}
                             barRatio={0.8}
                             barWidth={5}
                             data={getColorsForSignatures(this.props.data)}
