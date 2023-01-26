@@ -12,7 +12,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import { MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 export interface IClinicalInformationMutationalSignatureTableProps {
     data: IMutationalSignature[];
-    parentCallback: (childData: string) => void;
+    parentCallback: (childData: string, visibility: boolean) => void;
 }
 
 class MutationalSignatureTable extends LazyMobXTable<IMutationalSignatureRow> {}
@@ -74,7 +74,7 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
 > {
     @observable selectedSignature = '';
     sendData = () => {
-        this.props.parentCallback(this.selectedSignature);
+        this.props.parentCallback(this.selectedSignature, true);
     };
 
     constructor(props: IClinicalInformationMutationalSignatureTableProps) {
@@ -106,14 +106,12 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
                 name: 'Mutational Signature',
                 render: (data: IMutationalSignatureRow) => (
                     <span
-                        //onClick={this.getMutationalSignatureProfileData.bind(
-                        //    data
-                        //)}
+                        onClick={this.getMutationalSignatureProfileData.bind(
+                            data
+                        )}
                         id={'spanSignatureName'}
                     >
-                        <a href={data.url} target={'_blank'}>
-                            {data[this.firstCol]}
-                        </a>
+                        {data[this.firstCol]}
                     </span>
                 ),
                 download: (data: IMutationalSignatureRow) =>
