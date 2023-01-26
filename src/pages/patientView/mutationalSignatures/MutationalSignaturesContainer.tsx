@@ -32,10 +32,28 @@ export default class MutationalSignaturesContainer extends React.Component<
 > {
     state = {
         signatureProfile: this.props.data[this.props.version][0].meta.name,
+        signatureURL: this.props.data[this.props.version][0].meta.url,
+        signatureDescription: this.props.data[this.props.version][0].meta
+            .description,
+        visible: false,
     };
-    callbackFunction = (childData: string) => {
+
+    callbackFunction = (childData: string, visibility: boolean) => {
         this.setState({
             signatureProfile: childData,
+            visible: visibility,
+            signatureURL: this.props.data[this.props.version].filter(obj => {
+                if (childData === obj.meta.name) {
+                    return obj;
+                }
+            })[0].meta.url,
+            signatureDescription: this.props.data[this.props.version].filter(
+                obj => {
+                    if (childData === obj.meta.name) {
+                        return obj;
+                    }
+                }
+            )[0].meta.description,
         });
     };
     constructor(props: IMutationalSignaturesContainerProps) {
@@ -87,8 +105,7 @@ export default class MutationalSignaturesContainer extends React.Component<
         this.state.signatureProfile = this.props.data[
             option.value
         ][0].meta.name;
-        this.selectDescriptionSignature;
-        this.selectURLSignature;
+        this.state.visible = false;
     }
     @action.bound changeSignature(name: string): void {
         this._selectedSignature = name;
@@ -125,6 +142,16 @@ export default class MutationalSignaturesContainer extends React.Component<
                         </div>
                     </div>
                 </div>
+                <div></div>
+                <SignatureTextBox
+                    visible={this.state.visible}
+                    height={100}
+                    width={100}
+                    url={this.state.signatureURL}
+                    description={this.state.signatureDescription}
+                    version={'v2'}
+                    signature={this.state.signatureProfile}
+                ></SignatureTextBox>
                 {this.props.data && (
                     <div>
                         {!_.isEmpty(this.props.dataCount) && (
