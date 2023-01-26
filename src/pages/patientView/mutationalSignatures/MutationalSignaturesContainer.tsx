@@ -39,7 +39,6 @@ export default class MutationalSignaturesContainer extends React.Component<
     };
 
     callbackFunction = (childData: string, visibility: boolean) => {
-        console.log(visibility);
         this.setState({
             signatureProfile: childData,
             visible: visibility,
