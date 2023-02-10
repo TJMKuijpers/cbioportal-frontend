@@ -33,9 +33,9 @@ export default class SignatureTextBox extends React.Component<
             <div
                 style={{
                     position: 'fixed',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-75%,0)',
+                    top: '60%',
+                    left: '25%',
+                    transform: 'translate(-50%,-50%)',
                 }}
             >
                 {this.props.visible && (
