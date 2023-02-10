@@ -591,12 +591,30 @@ export class PatientViewPageStore {
                         mutationalSignatureChartData.count = parseFloat(
                             count.value
                         );
-                        mutationalSignatureChartData.mutationalSignatureClass = signatureLabelMap
-                            .filter(obj => obj.stableId === count.stableId)
-                            .map(obj => obj.signatureClass)[0];
-                        mutationalSignatureChartData.mutationalSignatureLabel = signatureLabelMap
-                            .filter(obj => obj.stableId === count.stableId)
-                            .map(obj => obj.signatureLabel)[0];
+                        mutationalSignatureChartData.mutationalSignatureClass =
+                            _.last(count.molecularProfileId.split('_')) == 'SBS'
+                                ? _.last(count.stableId.split('_'))!.substring(
+                                      2,
+                                      5
+                                  )
+                                : _.last(count.molecularProfileId.split('_')) ==
+                                  'DBS'
+                                ? _.last(count.stableId.split('_'))!.substring(
+                                      0,
+                                      3
+                                  )
+                                : _.last(count.molecularProfileId.split('_')) ==
+                                  'ID'
+                                ? _.last(count.stableId.split('_'))!.substring(
+                                      0,
+                                      5
+                                  )
+                                : '';
+                        //    signatureLabelMap
+                        //    .filter(obj => obj.stableId === count.stableId)
+                        //    .map(obj => obj.signatureClass)[0] || ''
+                        mutationalSignatureChartData.mutationalSignatureLabel =
+                            _.last(count.stableId.split('_')) || '';
                         result.push(mutationalSignatureChartData);
                     }
                 }
@@ -820,8 +838,8 @@ export class PatientViewPageStore {
             );
         },
     });
-    @observable _selectedMutationalSignatureVersion: string;
 
+    @observable _selectedMutationalSignatureVersion: string;
 
     readonly initialMutationalSignatureVersion = remoteData({
         await: () => [],
