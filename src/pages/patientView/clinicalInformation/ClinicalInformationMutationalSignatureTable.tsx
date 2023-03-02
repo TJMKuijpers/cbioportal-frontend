@@ -33,7 +33,6 @@ export function prepareMutationalSignatureDataForTable(
     mutationalSignatureData: IMutationalSignature[]
 ): IMutationalSignatureRow[] {
     const tableData: IMutationalSignatureRow[] = [];
-
     //group data by mutational signature
     //[{id: mutationalsignatureid, samples: [{}, {}]}]
     let sampleInvertedDataByMutationalSignature: Array<any> = _(
