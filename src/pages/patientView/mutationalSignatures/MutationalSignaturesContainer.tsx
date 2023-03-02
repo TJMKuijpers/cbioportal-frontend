@@ -20,8 +20,8 @@ import SignatureTextBox from 'pages/patientView/mutationalSignatures/SignatureTe
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
     profiles: MolecularProfile[];
-    onVersionChange: (version: string) => void;
     version: string;
+    onVersionChange: (version: string) => void;
     dataCount: { [version: string]: IMutationalCounts[] };
 }
 
@@ -55,6 +55,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                 }
             )[0].meta.description,
         });
+        console.log(this.state.visible);
     };
     constructor(props: IMutationalSignaturesContainerProps) {
         super(props);
@@ -78,7 +79,7 @@ export default class MutationalSignaturesContainer extends React.Component<
     }
     @observable urlSignature: string;
     @observable descriptionSignature: string;
-
+    @observable modalVisible: boolean = this.state.visible;
     @computed get selectURLSignature(): string {
         let urlLink = this.props.data[this.props.version][0].meta.url;
         return urlLink;
@@ -99,6 +100,19 @@ export default class MutationalSignaturesContainer extends React.Component<
         );
     }
 
+    // @action.bound
+    // private onVersionChange(option: { label: string; value: string }): void {
+    //     this.props.onVersionChange(option.value);
+    //     this.state.signatureProfile = this.props.data[
+    //         option.value
+    //         ][0].meta.name;
+    //     this.state.visible = false;
+    // }
+    @action.bound changeSignature(name: string): void {
+        this._selectedSignature = name;
+        // get the dataset with this signature
+    }
+
     @action.bound
     private onVersionChange(option: { label: string; value: string }): void {
         this.props.onVersionChange(option.value);
@@ -106,10 +120,6 @@ export default class MutationalSignaturesContainer extends React.Component<
             option.value
         ][0].meta.name;
         this.state.visible = false;
-    }
-    @action.bound changeSignature(name: string): void {
-        this._selectedSignature = name;
-        // get the dataset with this signature
     }
 
     public render() {
@@ -131,7 +141,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                                 classNamePrefix={
                                     'mutationalSignaturesVersionSelector'
                                 }
-                                value={getVersionOption(this.selectedVersion)}
+                                value={getVersionOption(this.props.version)}
                                 onChange={this.onVersionChange}
                                 options={getVersionOptions(
                                     this.availableVersions
@@ -144,13 +154,16 @@ export default class MutationalSignaturesContainer extends React.Component<
                 </div>
                 <div></div>
                 <SignatureTextBox
-                    visible={this.state.visible}
                     height={100}
                     width={100}
                     url={this.state.signatureURL}
                     description={this.state.signatureDescription}
                     signature={this.state.signatureProfile}
                     parentCallback={this.callbackFunction}
+                    show={this.state.visible}
+                    onHide={() => {
+                        this.state.visible = false;
+                    }}
                 ></SignatureTextBox>
                 {this.props.data && (
                     <div>

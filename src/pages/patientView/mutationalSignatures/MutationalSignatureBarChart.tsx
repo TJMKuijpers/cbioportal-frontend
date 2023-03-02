@@ -29,44 +29,113 @@ export interface IColorDataBar extends IMutationalCounts {
 
 export interface colorMapProps {
     name: string;
+    category: string;
     color: string;
 }
 
 const colorMap: colorMapProps[] = [
-    { name: 'C>A', color: 'lightblue' },
-    { name: 'C>G', color: 'darkblue' },
-    { name: 'C>T', color: 'red' },
-    { name: 'T>A', color: 'grey' },
-    { name: 'T>C', color: 'green' },
-    { name: 'T>G', color: 'pink' },
-    { name: 'reference', color: '#1e97f3' },
-    { name: 'AC>', color: 'skyblue' },
-    { name: 'AT>', color: 'blue' },
-    { name: 'CC>', color: 'lightgreen' },
-    { name: 'CG>', color: 'darkgreen' },
-    { name: 'CT>', color: 'pink' },
-    { name: 'CG>', color: 'darkred' },
-    { name: 'TA>', color: 'sand' },
-    { name: 'TC>', color: 'orange' },
-    { name: 'TG>', color: 'lila' },
-    { name: 'TT>', color: 'purple' },
-    { name: 'GC>', color: 'gold' },
-    { name: '1:Ins', color: '#f39c12' },
-    { name: '1bp deletion (T)', color: '#d68910' },
-    { name: '1bp insertion (C)', color: '#82E0AA' },
-    { name: '1bp insertion (T)', color: '#28b463' },
-    { name: '2:Del', color: '#f1948a' },
-    { name: '3:Del', color: '#ec7063' },
-    { name: '4:Del', color: '#e74c3c' },
-    { name: '5:Del', color: '#cb4335' },
-    { name: '2:Ins', color: '#aed6f1' },
-    { name: '3:Ins', color: '#85c1e9' },
-    { name: '4:Ins', color: '#85c1e9' },
-    { name: '5:Ins', color: '#3498db' },
-    { name: 'Microhomology (Deletion length 2)', color: '#c39bd3' },
-    { name: 'Microhomology (Deletion length 3)', color: '#9b59b6' },
-    { name: 'Microhomology (Deletion length 4)', color: '#7d3c98' },
-    { name: 'Microhomology (Deletion length 5)', color: '#4a235a' },
+    {
+        name: 'C>A',
+        category: 'Single base substitution (C>A)',
+        color: 'lightblue',
+    },
+    {
+        name: 'C>G',
+        category: 'Single base substitution (C>G)',
+        color: 'darkblue',
+    },
+    { name: 'C>T', category: 'Single base substitution (C>T)', color: 'red' },
+    { name: 'T>A', category: 'Single base substitution (T>A)', color: 'grey' },
+    { name: 'T>C', category: 'Single base substitution (T>C)', color: 'green' },
+    { name: 'T>G', category: 'Single base substitution (T>G)', color: 'pink' },
+    { name: 'reference', category: 'reference', color: '#1e97f3' },
+    {
+        name: 'AC>',
+        category: 'Doublet base substitution (AC>NN)',
+        color: 'skyblue',
+    },
+    {
+        name: 'AT>',
+        category: 'Doublet base substitution (AT>NN)',
+        color: 'blue',
+    },
+    {
+        name: 'CC>',
+        category: 'Doublet base substitution (CC>NN)',
+        color: 'lightgreen',
+    },
+    {
+        name: 'CG>',
+        category: 'Doublet base substitution (CG>NN)',
+        color: 'darkgreen',
+    },
+    {
+        name: 'CT>',
+        category: 'Doublet base substitution (CT>NN)',
+        color: 'pink',
+    },
+    {
+        name: 'CG>',
+        category: 'Doublet base substitution (CG>NN)',
+        color: 'darkred',
+    },
+    {
+        name: 'TA>',
+        category: 'Doublet base substitution (TA>NN)',
+        color: 'sand',
+    },
+    {
+        name: 'TC>',
+        category: 'Doublet base substitution (TC>NN)',
+        color: 'orange',
+    },
+    {
+        name: 'TG>',
+        category: 'Doublet base substitution (TG>NN)',
+        color: 'lila',
+    },
+    {
+        name: 'TT>',
+        category: 'Doublet base substitution (TT>NN)',
+        color: 'purple',
+    },
+    {
+        name: 'GC>',
+        category: 'Doublet base substitution (GC>NN)',
+        color: 'gold',
+    },
+    { name: '1:Del:C', category: '1bp insertion (T)', color: '#f39c12' },
+    { name: '1:Del:T', category: '1bp insertion (T)', color: '#d68910' },
+    { name: '1:Ins:C', category: '1bp insertion (C)', color: '#82E0AA' },
+    { name: '1:Ins:T', category: '1bp insertion (T)', color: '#28b463' },
+    { name: '2:Del:R', category: '2bp deletion at repeats', color: '#f1948a' },
+    { name: '3:Del:R', category: '3bp deletion at repeats', color: '#ec7063' },
+    { name: '4:Del:R', category: '4bp deletion at repeats', color: '#e74c3c' },
+    { name: '5:Del:R', category: '5bp deletion at repeats', color: '#cb4335' },
+    { name: '2:Ins:M', category: '2bp insertion at repeats', color: '#aed6f1' },
+    { name: '3:Ins:M', category: '3bp insertion at repeats', color: '#85c1e9' },
+    { name: '4:Ins:M', category: '4bp insertion at repeats', color: '#85c1e9' },
+    { name: '5:Ins:M', category: '5bp insertion at repeats', color: '#3498db' },
+    {
+        name: 'Microhomology (Deletion length 2)',
+        category: 'Microhomology (Deletion length 2)',
+        color: '#c39bd3',
+    },
+    {
+        name: 'Microhomology (Deletion length 3)',
+        category: 'Microhomology (Deletion length 3)',
+        color: '#9b59b6',
+    },
+    {
+        name: 'Microhomology (Deletion length 4)',
+        category: 'Microhomology (Deletion length 4)',
+        color: '#7d3c98',
+    },
+    {
+        name: 'Microhomology (Deletion length 5)',
+        category: 'Microhomology (Deletion length 5)',
+        color: '#4a235a',
+    },
 ];
 
 export function transformMutationalSignatureData(dataset: IMutationalCounts[]) {
@@ -126,7 +195,7 @@ export default class MutationalBarChart extends React.Component<
         });
         let legend = dataLegend.map((obj: colorMapProps) => {
             let entry = {
-                name: obj.name,
+                name: obj.category,
                 symbol: { fill: obj.color },
             };
             return entry;
@@ -168,14 +237,18 @@ export default class MutationalBarChart extends React.Component<
 
                     <VictoryStack>
                         <VictoryBar
-                            labelComponent={<VictoryTooltip style={{ fontSize: "7px" }}
-                                                            cornerRadius={3}
-                                                            pointerLength={0}
-                                                            flyoutStyle={{
-                                                                stroke: "#bacdd8",
-                                                                strokeWidth: 1,
-                                                                fill: "white"
-                                                            }} />}
+                            labelComponent={
+                                <VictoryTooltip
+                                    style={{ fontSize: '7px' }}
+                                    cornerRadius={3}
+                                    pointerLength={0}
+                                    flyoutStyle={{
+                                        stroke: '#bacdd8',
+                                        strokeWidth: 1,
+                                        fill: 'white',
+                                    }}
+                                />
+                            }
                             barRatio={0.8}
                             barWidth={5}
                             data={getColorsForSignatures(this.props.data)}
