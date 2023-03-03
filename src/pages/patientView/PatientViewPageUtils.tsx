@@ -4,6 +4,42 @@ import {
     IGenePanelDataByProfileIdAndSample,
     isSampleProfiledInProfile,
 } from 'shared/lib/isSampleProfiled';
+import { GenericAssayMeta } from 'cbioportal-ts-api-client';
+import {
+    IMutationalSignature,
+    IMutationalSignatureMeta,
+    IMutationalCounts,
+} from 'shared/model/MutationalSignature';
+import {
+    getGenericAssayMetaPropertyOrDefault,
+    getGenericAssayCategoryFromName,
+} from 'shared/lib/GenericAssayUtils/GenericAssayCommonUtils';
+
+type MutationalSignatureLabelMap = {
+    stableId: string;
+    signatureLabel: string;
+    signatureClass: string;
+    name: string;
+};
+
+type MutationalSignatureCount = {
+    mutationalSignatureLabel: string;
+    patientId: string;
+    sampleId: string;
+    studyId: string;
+    stableId: string;
+    molecularProfileId: string;
+    uniquePatientKey: string;
+    uniqueSampleKey: string;
+    value: string;
+    version: string;
+};
+
+export function getMutationalSignaturesVersionFromProfileId(
+    inputProfileId: string
+): string {
+    return _.last(inputProfileId.split('_')) || '';
+}
 
 export function checkNonProfiledGenesExist(
     sampleIds: string[],
@@ -50,4 +86,55 @@ export function getSamplesProfiledStatus(
         someProfiled,
         notProfiledIds,
     };
+}
+export function retrieveMutationalSignatureMap(
+    inputMetaData: GenericAssayMeta[]
+): MutationalSignatureLabelMap[] {
+    const mappedData = inputMetaData.map((metaData: GenericAssayMeta) => {
+        const nameSig: string = getGenericAssayMetaPropertyOrDefault(
+            metaData,
+            'MUTATION_TYPE',
+            ''
+        );
+        const classSig: string = getGenericAssayMetaPropertyOrDefault(
+            metaData,
+            'MUTATION_CLASS',
+            ''
+        );
+        const mutNameSig: string = getGenericAssayMetaPropertyOrDefault(
+            metaData,
+            'NAME',
+            ''
+        );
+        const signatureId = metaData.stableId;
+        return {
+            stableId: signatureId,
+            signatureLabel: nameSig,
+            signatureClass: classSig,
+            name: mutNameSig,
+        };
+    });
+    return mappedData;
+}
+
+export function createMutationalCountsObject(
+    inputData: any,
+    signatureLabelMap: MutationalSignatureLabelMap[]
+) {
+    const result = inputData.map((count: MutationalSignatureCount) => ({
+        patientId: count.patientId,
+        sampleId: count.sampleId,
+        studyId: count.studyId,
+        uniquePatientKey: count.uniquePatientKey,
+        uniqueSampleKey: count.uniqueSampleKey,
+        version: getMutationalSignaturesVersionFromProfileId(
+            count.molecularProfileId
+        ),
+        value: parseFloat(count.value),
+        mutationalSignatureLabel:
+            signatureLabelMap
+                .filter(obj => obj.stableId === count.stableId)
+                .map(obj => obj.name)[0] || '',
+    }));
+    return result;
 }

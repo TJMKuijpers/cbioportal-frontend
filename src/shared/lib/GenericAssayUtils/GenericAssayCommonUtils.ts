@@ -286,6 +286,19 @@ export function getGenericAssayMetaPropertyOrDefault(
     );
 }
 
+export function getGenericAssayCategoryFromName(
+    name: string,
+    defaultValue: string
+) {
+    // TODO: should we add additional property 'CATEGORY' in data file
+    // currently, category can be derived from name
+    // name format: ENTITY_NAME (CATEGORY)
+    // we can get category between '(' and ')'
+    return name
+        ? name.substring(name.lastIndexOf('(') + 1, name.lastIndexOf(')'))
+        : 'No category';
+}
+
 export function getCategoryOrderByGenericAssayType(genericAssayType: string) {
     // return category order for reserved generic assay type
     // return undefined for other types
