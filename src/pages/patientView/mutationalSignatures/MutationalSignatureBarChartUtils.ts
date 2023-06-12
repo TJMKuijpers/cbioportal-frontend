@@ -276,6 +276,24 @@ export function getColorsForSignatures(
     }
 }
 
+export function addColorsForReferenceData(dataset) {
+    const colors = dataset.map(entry => {
+        const colorIdentity = colorMap.filter(cmap => {
+            if (entry.mutationalSignatureLabel.match(cmap.name) !== null) {
+                console.log(entry);
+                console.log(cmap);
+                return cmap.color;
+            }
+        });
+        const colorValue =
+            colorIdentity.length > 0
+                ? colorIdentity[colorIdentity.length - 1].color
+                : '#EE4B2B';
+        return { ...entry, colorValue };
+    });
+    return colors;
+}
+
 export function getPercentageOfMutationalCount(
     inputData: IMutationalCounts[]
 ): IMutationalCounts[] {

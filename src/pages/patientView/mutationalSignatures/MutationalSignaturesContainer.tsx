@@ -60,7 +60,11 @@ export default class MutationalSignaturesContainer extends React.Component<
     IMutationalSignaturesContainerProps,
     {}
 > {
-    @observable signatureProfile: string;
+    @observable signatureProfile: string = _.last(
+        this.props.data[
+            this.props.version
+        ][0].meta.mutationalSignatureId!.split('_')
+    )!;
     @observable.ref private plotSvg: SVGElement | null = null;
     @observable signatureURL: string;
     @observable signatureDescription: string;
@@ -71,8 +75,9 @@ export default class MutationalSignaturesContainer extends React.Component<
 
     @observable
     selectedScale: string = AxisScale.COUNT;
-
     mutationalProfileSelection = (childData: string, visibility: boolean) => {
+        console.log(this.signatureProfile);
+
         this.signatureProfile = childData;
         this.signatureInformationToolTipVisible = visibility;
         this.signatureURL = this.props.data[this.props.version].filter(obj => {
