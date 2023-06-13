@@ -76,8 +76,6 @@ export default class MutationalSignaturesContainer extends React.Component<
     @observable
     selectedScale: string = AxisScale.COUNT;
     mutationalProfileSelection = (childData: string, visibility: boolean) => {
-        console.log(this.signatureProfile);
-
         this.signatureProfile = childData;
         this.signatureInformationToolTipVisible = visibility;
         this.signatureURL = this.props.data[this.props.version].filter(obj => {

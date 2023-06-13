@@ -30,11 +30,26 @@ import {
     formatLegendObjectsForRectangles,
     getCenterPositionLabelEntries,
     addColorsForReferenceData,
+    DataToPlot,
 } from './MutationalSignatureBarChartUtils';
-import { CBIOPORTAL_VICTORY_THEME } from 'cbioportal-frontend-commons';
+import {
+    CBIOPORTAL_VICTORY_THEME,
+    FrequencyCell,
+} from 'cbioportal-frontend-commons';
 import { AxisScale } from 'react-mutation-mapper';
 import { scalePoint } from 'd3-scale';
-import { cosmicReferenceData, FrequencyData } from './CosmicReferenceUtils';
+
+const cosmicReferenceData = require('./cosmic_reference.json');
+
+type FrequencyData = { channel: string; frequency: number };
+
+type SignatureData = { [signature: string]: FrequencyData };
+
+type VersionData = { [version: string]: SignatureData };
+
+type GenomeData = { [genome: string]: VersionData };
+
+type CosmicData = { [cosmicVersion: string]: GenomeData };
 export interface IMutationalBarChartProps {
     signature: string;
     width: number;
@@ -45,8 +60,6 @@ export interface IMutationalBarChartProps {
     sample: string;
     label: string;
 }
-
-type dataToPlot = { mutationalSignatureLabel: string; value: number };
 
 const theme = _.cloneDeep(CBIOPORTAL_VICTORY_THEME);
 theme.legend.style.data = {
@@ -124,8 +137,8 @@ export default class MutationalBarChart extends React.Component<
             }
         );
         return [
-            maxValue.frequency,
-            minValue.frequency + 0.1 * minValue.frequency,
+            maxValue.frequency * 100,
+            (minValue.frequency + 0.1 * minValue.frequency) * 100,
         ];
     }
 
@@ -276,27 +289,22 @@ export default class MutationalBarChart extends React.Component<
         return getColorsForSignatures(data).map(item => item.label);
     }
 
-    @action getReferenceSignatureToPlot(
-        referenceSignature: string,
-        version: string
-    ) {
+    @computed get getReferenceSignatureToPlot() {
         const currentSignature: string = this.props.signature.split(' ')[0];
-        const referenceSignatureToPlot: ReferenceData[] =
+        const referenceSignatureToPlot: FrequencyData[] =
             cosmicReferenceData['v3.3']['GRCh37'][this.props.version][
                 currentSignature
             ];
-        const referenceData: dataToPlot[] = referenceSignatureToPlot.map(
-            (sig: ReferenceData) => {
+        const referenceData: DataToPlot[] = referenceSignatureToPlot.map(
+            (sig: FrequencyData) => {
                 return {
                     mutationalSignatureLabel: sig.channel,
-                    value: -1 * sig.frequency,
+                    value: -1 * (sig.frequency * 100),
                 };
             }
         );
         let referenceSorted = this.getSortedReferenceSignatures(referenceData);
-        console.log(referenceSorted);
         const referenceData2 = addColorsForReferenceData(referenceSorted);
-        console.log(referenceData2);
         return referenceData2;
     }
 
@@ -312,7 +320,7 @@ export default class MutationalBarChart extends React.Component<
             return referenceData;
         } else {
             // make sure that the order of the reference signature is the same as the count matrix
-            let sorted = referenceData.sort((a, b) => {
+            let sorted = referenceData.sort((a: DataToPlot, b: DataToPlot) => {
                 return (
                     labelsOrder.findIndex(
                         p => p === a.mutationalSignatureLabel
@@ -322,6 +330,14 @@ export default class MutationalBarChart extends React.Component<
             });
             return sorted;
         }
+    }
+    @computed get referenceAxisLabel() {
+        const percentageString = 'Percentage ';
+        return this.props.version === 'SBS'
+            ? percentageString + 'of SBS' + '\n' + this.props.signature
+            : this.props.version === 'DBS'
+            ? percentageString + 'of DBS' + '\n' + this.props.signature
+            : percentageString + 'of InDels' + '\n' + this.props.signature;
     }
 
     public render() {
@@ -333,7 +349,7 @@ export default class MutationalBarChart extends React.Component<
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 1100 500"
-                    style={{ paddingLeft: '70' }}
+                    style={{ paddingLeft: '30' }}
                 >
                     {this.formatLegendTopAxisPoints}
                     {this.formatColorBoxLegend}
@@ -342,6 +358,7 @@ export default class MutationalBarChart extends React.Component<
                         dependentAxis
                         label={this.props.label}
                         domain={this.yAxisDomain}
+                        offsetX={45}
                         style={{
                             axis: { strokeWidth: 1 },
                             axisLabel: {
@@ -367,32 +384,15 @@ export default class MutationalBarChart extends React.Component<
                         }}
                         standalone={false}
                     />
-                    <VictoryAxis
-                        tickValues={this.xTickLabels}
-                        width={1100}
-                        style={{
-                            axisLabel: {
-                                fontSize: '4px',
-                                padding: 20,
-                            },
-                            tickLabels: {
-                                fontSize: '8px',
-                                padding: 35,
-                                angle: 270,
-                                textAnchor: 'start',
-                            },
-                            axis: { strokeWidth: 0 },
-                            grid: { stroke: 0 },
-                        }}
-                        standalone={false}
-                    />
+
                     <g transform={'translate(0, 240)'}>
                         <VictoryAxis
                             dependentAxis
                             orientation="left"
                             invertAxis
-                            label={'Frequency'}
+                            label={this.referenceAxisLabel}
                             domain={this.yAxisDomainReference}
+                            offsetX={45}
                             style={{
                                 axis: { strokeWidth: 1 },
                                 axisLabel: {
@@ -400,8 +400,8 @@ export default class MutationalBarChart extends React.Component<
                                     padding:
                                         this.props.label ==
                                         'Mutational count (value)'
-                                            ? 35
-                                            : 30,
+                                            ? 25
+                                            : 20,
                                     letterSpacing: 'normal',
                                     fontFamily: 'Arial, Helvetica',
                                 },
@@ -419,13 +419,32 @@ export default class MutationalBarChart extends React.Component<
                             standalone={false}
                         />
                     </g>
+                    <VictoryAxis
+                        tickValues={this.xTickLabels}
+                        width={1100}
+                        style={{
+                            axisLabel: {
+                                fontSize: '4px',
+                                padding: 20,
+                            },
+                            tickLabels: {
+                                fontSize: '8px',
+                                padding: 35,
+                                angle: 270,
+                                textAnchor: 'start',
+                                verticalAnchor: 'middle',
+                            },
+                            axis: { strokeWidth: 0 },
+                            grid: { stroke: 0 },
+                        }}
+                        standalone={false}
+                    />
                     <g>
                         <VictoryBar
                             barRatio={1}
                             barWidth={2}
                             width={1100}
                             labels={this.getLabelsForTooltip(this.props.data)}
-                            domain={{ x: [0.5, this.props.data.length] }}
                             labelComponent={
                                 <VictoryTooltip
                                     style={{ fontSize: '8px' }}
@@ -455,21 +474,9 @@ export default class MutationalBarChart extends React.Component<
                             barRatio={1}
                             barWidth={2}
                             width={1100}
-                            data={this.getReferenceSignatureToPlot(
-                                'SBS',
-                                'SBS10'
-                            )}
+                            data={this.getReferenceSignatureToPlot}
                             x="label"
                             y="value"
-                            domain={{
-                                x: [
-                                    -0.5,
-                                    this.getReferenceSignatureToPlot(
-                                        'SBS',
-                                        'SBS10'
-                                    ).length,
-                                ],
-                            }}
                             style={{
                                 data: {
                                     fill: (d: IColorDataBar) => d.colorValue,

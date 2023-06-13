@@ -11,6 +11,7 @@ export interface IColorDataBar extends IMutationalCounts {
     label: string;
     subcategory?: string;
 }
+export type DataToPlot = { mutationalSignatureLabel: string; value: number };
 
 export interface ColorMapProps {
     name: string;
@@ -276,12 +277,10 @@ export function getColorsForSignatures(
     }
 }
 
-export function addColorsForReferenceData(dataset) {
-    const colors = dataset.map(entry => {
+export function addColorsForReferenceData(dataset: DataToPlot[]) {
+    const colors = dataset.map((entry: DataToPlot) => {
         const colorIdentity = colorMap.filter(cmap => {
             if (entry.mutationalSignatureLabel.match(cmap.name) !== null) {
-                console.log(entry);
-                console.log(cmap);
                 return cmap.color;
             }
         });
