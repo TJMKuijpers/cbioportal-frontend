@@ -126,10 +126,11 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
             {
                 name: 'Mutational Signature',
                 render: (data: IMutationalSignatureRow) => (
-                    <Tooltip overlay={this.tooltipInfo}>
+                    <Tooltip overlay={this.tooltipInfo} trigger={['click']}>
                         {
                             <span
-                                onMouseOver={() =>
+                                style={{ cursor: 'pointer' }}
+                                onClick={() =>
                                     this.props.parentCallback(data.name, false)
                                 }
                             >
