@@ -56,6 +56,8 @@ function listOfMutationDataToHTML(
             d.amino_acid_change,
             d.cancer_hotspots_hotspot,
             d.oncokb_oncogenic,
+            d.mutation_type,
+            d.mutation_status,
             d.driver_filter,
             d.driver_filter_annotation,
             d.driver_tiers_filter,
@@ -72,6 +74,8 @@ function listOfMutationDataToHTML(
                     amino_acid_change,
                     cancer_hotspots_hotspot,
                     oncokb_oncogenic,
+                    mutation_type,
+                    mutation_status,
                     driver_filter,
                     driver_filter_annotation,
                     driver_tiers_filter,
@@ -93,6 +97,12 @@ function listOfMutationDataToHTML(
                     ret.append(
                         `<img src="${oncokbImg}" title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/>`
                     );
+                }
+                if (mutation_type) {
+                    ret.append('<b> Mutation type</b> ' + mutation_type);
+                }
+                if (mutation_status) {
+                    ret.append('<b> Mutation status: </b> ' + mutation_status);
                 }
                 //If we have data for the binary custom driver annotations, append an icon to the tooltip with the annotation information
                 if (driver_filter && driver_filter === PUTATIVE_DRIVER) {
@@ -273,14 +283,13 @@ export function makeGeneticTrackTooltip(
 ) {
     return function(dataUnderMouse: DataUnderMouse) {
         const ret = $('<div>').addClass(TOOLTIP_DIV_CLASS);
-
         // add a link to patient view page
         ret.append(getCaseViewElt(dataUnderMouse, caseViewLinkout)).append(
             '<br/>'
         );
-
+        // Get the portal properties that define if extra fields should be visseble
+        const information = groupByMutationInformation(dataUnderMouse);
         const alterations = groupAlterationsByType(dataUnderMouse);
-
         let mutations: any[] = alterations.mutations;
         let cna: any[] = alterations.cna;
         let mrna: any[] = alterations.mrna;
@@ -521,6 +530,28 @@ export function makeGeneticTrackTooltip(
         return ret;
     };
 }
+function groupByVariantInformation(dataUnderMouse: DataUnderMouse) {
+    let eventInfo: any = [];
+    let cohort: any = [];
+    let cosmic: any = [];
+}
+
+function groupByMutationInformation(dataUnderMouse: DataUnderMouse) {
+    let annotation: any = [];
+    let mutationType: any = [];
+    let copyNumber: any = [];
+    const mutationTable = dataUnderMouse.map(item => {
+        const collection: any = {};
+        item.data.map(subItem => {
+            collection.mutationStatus = subItem.mutationStatus;
+            collection.mutationType = subItem.mutationType;
+            collection.oncokb_oncogenic = subItem.oncoKbOncogenic;
+            collection.hotSpot = subItem.isHotspot;
+            mutationType.push(collection);
+        });
+    });
+    return mutationType;
+}
 
 function groupAlterationsByType(dataUnderMouse: DataUnderMouse) {
     let mutations: any[] = [];
@@ -531,6 +562,7 @@ function groupAlterationsByType(dataUnderMouse: DataUnderMouse) {
     // collect all data under mouse
     for (const d of dataUnderMouse) {
         for (let i = 0; i < d.data.length; i++) {
+            console.log(d.data[i]);
             const datum = d.data[i];
             const molecularAlterationType =
                 datum.molecularProfileAlterationType;
@@ -541,6 +573,11 @@ function groupAlterationsByType(dataUnderMouse: DataUnderMouse) {
                     tooltip_datum.hugo_gene_symbol = hugoGeneSymbol;
                     tooltip_datum.amino_acid_change = datum.proteinChange;
                     tooltip_datum.driver_filter = datum.driverFilter;
+                    tooltip_datum.mutation_status = datum.mutationStatus;
+                    tooltip_datum.mutation_type = datum.mutationType;
+                    tooltip_datum.oncokb_oncogenic = datum.oncoKbOncogenic;
+                    tooltip_datum.hotspot = datum.isHotspot;
+                    tooltip_datum.variantType = datum.variantType;
                     tooltip_datum.driver_filter_annotation =
                         datum.driverFilterAnnotation;
                     tooltip_datum.driver_tiers_filter = datum.driverTiersFilter;
@@ -573,6 +610,7 @@ function groupAlterationsByType(dataUnderMouse: DataUnderMouse) {
                     if (oncokb_oncogenic) {
                         tooltip_datum.oncokb_oncogenic = oncokb_oncogenic;
                     }
+                    tooltip_datum.svStatus = structuralVariantDatum.svStatus;
                     structuralVariants.push(tooltip_datum);
                     break;
                 }
