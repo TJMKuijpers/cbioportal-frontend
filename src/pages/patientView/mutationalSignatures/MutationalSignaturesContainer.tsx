@@ -33,6 +33,9 @@ import {
     DownloadControls,
 } from 'cbioportal-frontend-commons';
 import classNames from 'classnames';
+import { TABLE_FEATURE_INSTRUCTION } from 'pages/patientView/copyNumberAlterations/CopyNumberTableWrapper';
+import FeatureInstruction from 'shared/FeatureInstruction/FeatureInstruction';
+import WindowStore from 'shared/components/window/WindowStore';
 
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
@@ -55,6 +58,9 @@ export enum AxisScale {
     COUNT = '#',
 }
 
+const CONTENT_TO_SHOW_ABOVE_TABLE =
+    'Click on mutational signature to open modal and update reference plot';
+
 @observer
 export default class MutationalSignaturesContainer extends React.Component<
     IMutationalSignaturesContainerProps,
@@ -65,7 +71,7 @@ export default class MutationalSignaturesContainer extends React.Component<
             this.props.version
         ][0].meta.mutationalSignatureId!.split('_')
     )!;
-    @observable.ref private plotSvg: SVGElement | null = null;
+    private plotSvg: SVGElement | null = null;
     @observable signatureURL: string;
     @observable signatureDescription: string;
     @observable signatureInformationToolTipVisible: boolean = false;
@@ -185,12 +191,12 @@ export default class MutationalSignaturesContainer extends React.Component<
 
     @autobind
     private getSvg() {
-        if (document.getElementById('mutationalBarChart')) {
-            return document.getElementById('mutationalBarChart')!
-                .firstChild as SVGElement;
-        } else {
-            return null;
-        }
+        return this.plotSvg;
+    }
+
+    @autobind
+    private assignPlotSvgRef(el: SVGElement | null) {
+        this.plotSvg = el;
     }
 
     @observable
@@ -226,13 +232,23 @@ export default class MutationalSignaturesContainer extends React.Component<
     public render() {
         return (
             <div data-test="MutationalSignaturesContainer">
-                <div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div
+                    className="borderedChart"
+                    width={WindowStore.size.width - 50}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '30',
+                        }}
+                    >
                         <div
                             style={{
                                 display: 'inline-block',
                                 marginLeft: 5,
                                 width: 800,
+                                paddingBottom: 20,
                             }}
                         >
                             <div style={{ float: 'left', width: 300 }}>
@@ -331,48 +347,36 @@ export default class MutationalSignaturesContainer extends React.Component<
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {this.props.data && (
-                    <div>
-                        {!_.isEmpty(this.props.dataCount) && (
+                    {this.props.data && !_.isEmpty(this.props.dataCount) && (
+                        <div style={{ paddingLeft: 20 }}>
                             <MutationalBarChart
                                 signature={this.signatureProfile}
                                 height={220}
-                                width={800}
+                                width={1200}
                                 refStatus={false}
+                                svgId={'MutationalBarChart'}
+                                svgRef={this.assignPlotSvgRef}
                                 data={this.getDataForGraph}
                                 version={this.props.version}
                                 sample={this.props.sample}
                                 label={this.yAxisLabel}
                             />
-                        )}
-
-                        <div>
-                            <ClinicalInformationMutationalSignatureTable
-                                data={this.props.data[this.props.version]}
-                                parentCallback={this.mutationalProfileSelection}
-                                url={this.signatureURL}
-                                description={this.signatureDescription}
-                                signature={this.signatureProfile}
-                            />
                         </div>
-                        <SignatureTextBox
-                            height={100}
-                            width={100}
+                    )}
+                </div>
+
+                <div>
+                    <FeatureInstruction content={CONTENT_TO_SHOW_ABOVE_TABLE}>
+                        <ClinicalInformationMutationalSignatureTable
+                            data={this.props.data[this.props.version]}
+                            parentCallback={this.mutationalProfileSelection}
                             url={this.signatureURL}
                             description={this.signatureDescription}
                             signature={this.signatureProfile}
-                            selectMutationalSignature={
-                                this.mutationalProfileSelection
-                            }
-                            show={this.signatureInformationToolTipVisible}
-                            onHide={() =>
-                                this.mutationalProfileSelection('', false)
-                            }
                         />
-                    </div>
-                )}
+                    </FeatureInstruction>
+                </div>
             </div>
         );
     }
