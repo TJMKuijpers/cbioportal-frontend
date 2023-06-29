@@ -33,9 +33,9 @@ import {
     DownloadControls,
 } from 'cbioportal-frontend-commons';
 import classNames from 'classnames';
-import { TABLE_FEATURE_INSTRUCTION } from 'pages/patientView/copyNumberAlterations/CopyNumberTableWrapper';
 import FeatureInstruction from 'shared/FeatureInstruction/FeatureInstruction';
-import WindowStore from 'shared/components/window/WindowStore';
+import { AlterationEnrichmentRow } from 'shared/model/AlterationEnrichmentRow';
+import { MutationalSignatureTableDataStore } from 'pages/patientView/mutationalSignatures/MutationalSignaturesDataStore';
 
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
@@ -78,6 +78,10 @@ export default class MutationalSignaturesContainer extends React.Component<
     public static defaultProps: Partial<IAxisScaleSwitchProps> = {
         selectedScale: AxisScale.COUNT,
     };
+    @observable
+    public mutationalSignatureDataStore: MutationalSignatureTableDataStore = new MutationalSignatureTableDataStore(
+        () => this.props.data[this.props.version].map(x => [x])
+    );
 
     @observable
     selectedScale: string = AxisScale.COUNT;
@@ -232,15 +236,12 @@ export default class MutationalSignaturesContainer extends React.Component<
     public render() {
         return (
             <div data-test="MutationalSignaturesContainer">
-                <div
-                    className="borderedChart"
-                    width={WindowStore.size.width - 50}
-                >
+                <div className="borderedChart">
                     <div
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '30',
+                            padding: '0',
                         }}
                     >
                         <div
@@ -349,20 +350,18 @@ export default class MutationalSignaturesContainer extends React.Component<
                     </div>
 
                     {this.props.data && !_.isEmpty(this.props.dataCount) && (
-                        <div style={{ paddingLeft: 20 }}>
-                            <MutationalBarChart
-                                signature={this.signatureProfile}
-                                height={220}
-                                width={1200}
-                                refStatus={false}
-                                svgId={'MutationalBarChart'}
-                                svgRef={this.assignPlotSvgRef}
-                                data={this.getDataForGraph}
-                                version={this.props.version}
-                                sample={this.props.sample}
-                                label={this.yAxisLabel}
-                            />
-                        </div>
+                        <MutationalBarChart
+                            signature={this.signatureProfile}
+                            height={220}
+                            width={1200}
+                            refStatus={false}
+                            svgId={'MutationalBarChart'}
+                            svgRef={this.assignPlotSvgRef}
+                            data={this.getDataForGraph}
+                            version={this.props.version}
+                            sample={this.props.sample}
+                            label={this.yAxisLabel}
+                        />
                     )}
                 </div>
 
@@ -371,6 +370,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                         <ClinicalInformationMutationalSignatureTable
                             data={this.props.data[this.props.version]}
                             parentCallback={this.mutationalProfileSelection}
+                            dataStore={this.mutationalSignatureDataStore}
                             url={this.signatureURL}
                             description={this.signatureDescription}
                             signature={this.signatureProfile}

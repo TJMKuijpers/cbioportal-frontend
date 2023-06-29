@@ -11,10 +11,14 @@ import { observer } from 'mobx-react';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import Tooltip from 'rc-tooltip';
-
+import FeatureInstruction from 'shared/FeatureInstruction/FeatureInstruction';
+import autobind from 'autobind-decorator';
+import { MutationalSignatureTableDataStore } from '../mutationalSignatures/MutationalSignaturesDataStore';
+import PatientViewUrlWrapper from 'pages/patientView/PatientViewUrlWrapper';
 export interface IClinicalInformationMutationalSignatureTableProps {
     data: IMutationalSignature[];
     parentCallback: (childData: string, visibility: boolean) => void;
+    dataStore: MutationalSignatureTableDataStore;
     url: string;
     signature: string;
     description: string;
@@ -22,7 +26,7 @@ export interface IClinicalInformationMutationalSignatureTableProps {
 
 class MutationalSignatureTable extends LazyMobXTable<IMutationalSignatureRow> {}
 
-interface IMutationalSignatureRow {
+export interface IMutationalSignatureRow {
     name: string;
     sampleValues: {
         [sampleId: string]: {
@@ -76,7 +80,6 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
     {}
 > {
     @observable selectedSignature = '';
-
     constructor(props: IClinicalInformationMutationalSignatureTableProps) {
         super(props);
         makeObservable(this);
@@ -93,6 +96,27 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
         }));
     }
 
+    @autobind
+    onMutationalSignatureTableRowMouseLeave(d: IMutationalSignatureRow) {}
+    @autobind
+    onMutationalSignatureTableRowMouseEnter(d: IMutationalSignatureRow) {}
+    @autobind
+    onMutationalSignatureTableRowClick(d: IMutationalSignatureRow) {
+        console.log('this is what we send to the setSelectedMutSig');
+        const dSend = this.props.data.filter(x => x.meta.name === d.name);
+        // select mutation and toggle off previous selected
+        if (dSend.length) {
+            this.props.dataStore.setSelectedMutSig(dSend);
+            if (this.props.dataStore.selectedMutSig.length > 0) {
+                this.props.dataStore.toggleSelectedMutSig(
+                    this.props.dataStore.selectedMutSig[0]
+                );
+            }
+            //this.handleLocusChange(d[0].gene.hugoGeneSymbol);
+        }
+        this.props.parentCallback(d.name, false);
+    }
+
     @computed get tableData() {
         return prepareMutationalSignatureDataForTable(this.props.data);
     }
@@ -104,7 +128,7 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
             >
                 <div>
                     <h4>
-                        <b>Signature:</b>
+                        <b>Signature: </b>
                         {this.props.signature}
                     </h4>
                     <p style={{ fontSize: '16px' }}>
@@ -126,18 +150,7 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
             {
                 name: 'Mutational Signature',
                 render: (data: IMutationalSignatureRow) => (
-                    <Tooltip overlay={this.tooltipInfo} trigger={['click']}>
-                        {
-                            <span
-                                style={{ cursor: 'pointer' }}
-                                onClick={() =>
-                                    this.props.parentCallback(data.name, false)
-                                }
-                            >
-                                {data[this.firstCol]}
-                            </span>
-                        }
-                    </Tooltip>
+                    <span>{data[this.firstCol]}</span>
                 ),
                 download: (data: IMutationalSignatureRow) =>
                     `${data[this.firstCol]}`,
@@ -201,15 +214,24 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
 
     public render() {
         return (
-            <MutationalSignatureTable
-                columns={this.columns}
-                data={this.tableData}
-                showPagination={false}
-                initialItemsPerPage={SHOW_ALL_PAGE_SIZE}
-                showColumnVisibility={false}
-                initialSortColumn={this.uniqueSamples[0].id}
-                initialSortDirection="desc"
-            />
+            <div>
+                <MutationalSignatureTable
+                    columns={this.columns}
+                    data={this.tableData}
+                    showPagination={false}
+                    initialItemsPerPage={SHOW_ALL_PAGE_SIZE}
+                    showColumnVisibility={false}
+                    initialSortColumn={this.uniqueSamples[0].id}
+                    initialSortDirection="desc"
+                    onRowClick={this.onMutationalSignatureTableRowClick}
+                    onRowMouseEnter={
+                        this.onMutationalSignatureTableRowMouseEnter
+                    }
+                    onRowMouseLeave={
+                        this.onMutationalSignatureTableRowMouseLeave
+                    }
+                />
+            </div>
         );
     }
 }

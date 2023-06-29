@@ -136,7 +136,6 @@ export class PatientViewPageInner extends React.Component<
     public urlWrapper: PatientViewUrlWrapper;
     public patientViewMutationDataStore: PatientViewMutationsDataStore;
     public patientViewCnaDataStore: PatientViewCnaDataStore;
-
     public patientViewPageStore: PatientViewPageStore;
 
     constructor(props: IPatientViewPageProps) {
@@ -229,6 +228,8 @@ export class PatientViewPageInner extends React.Component<
     }
 
     @computed get showWholeSlideViewerTab() {
+        console.log('input cna store');
+        console.log(this.pageStore.mergedDiscreteCNADataFilteredByGene);
         return (
             this.pageStore.clinicalDataForSamples.isComplete &&
             _.some(this.pageStore.clinicalDataForSamples.result, s => {

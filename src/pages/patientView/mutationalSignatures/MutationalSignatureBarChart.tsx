@@ -171,7 +171,7 @@ export default class MutationalBarChart extends React.Component<
         const centerOfBoxes = this.formatColorBoxLegend;
         const xScale = getxScalePoint(
             labelObjects,
-            50,
+            60,
             WindowStore.size.width - 130
         );
         const legendLabelsChart: JSX.Element[] = [];
@@ -211,7 +211,7 @@ export default class MutationalBarChart extends React.Component<
         );
         const xScale = getxScalePoint(
             legendLabels,
-            50,
+            60,
             WindowStore.size.width - 130
         );
         const legendEntries = getLegendEntriesBarChart(legendLabels);
@@ -353,10 +353,10 @@ export default class MutationalBarChart extends React.Component<
 
     public render() {
         return (
-            <div style={{ padding: '70' }}>
+            <div>
                 <svg
                     height={600}
-                    width={WindowStore.size.width - 100}
+                    width={WindowStore.size.width - 50}
                     style={{ paddingLeft: '30' }}
                     xmlns="http://www.w3.org/2000/svg"
                     ref={this.props.svgRef}
@@ -364,38 +364,40 @@ export default class MutationalBarChart extends React.Component<
                     {this.formatLegendTopAxisPoints}
                     {this.formatColorBoxLegend}
                     {this.props.version == 'ID' && this.getSubLabelsLegend}
-                    <VictoryAxis
-                        dependentAxis
-                        label={this.props.label}
-                        domain={this.yAxisDomain}
-                        height={300}
-                        width={WindowStore.size.width - 100}
-                        offsetX={45}
-                        style={{
-                            axis: { strokeWidth: 1 },
-                            axisLabel: {
-                                padding:
-                                    this.props.label ==
-                                    'Mutational count (value)'
-                                        ? 35
-                                        : 30,
-                                letterSpacing: 'normal',
-                                fontFamily: 'Arial, Helvetica',
-                            },
-                            ticks: { size: 5, stroke: 'black' },
-                            tickLabels: {
-                                padding: 2,
-                            },
-                            grid: {
-                                stroke: 'lightgrey',
-                                strokeWidth: 0.3,
-                                strokeDasharray: 10,
-                            },
-                        }}
-                        standalone={false}
-                    />
+                    <g transform={'translate(10, 0)'}>
+                        <VictoryAxis
+                            dependentAxis
+                            label={this.props.label}
+                            domain={this.yAxisDomain}
+                            height={300}
+                            width={WindowStore.size.width - 100}
+                            offsetX={45}
+                            style={{
+                                axis: { strokeWidth: 1 },
+                                axisLabel: {
+                                    padding:
+                                        this.props.label ==
+                                        'Mutational count (value)'
+                                            ? 35
+                                            : 30,
+                                    letterSpacing: 'normal',
+                                    fontFamily: 'Arial, Helvetica',
+                                },
+                                ticks: { size: 5, stroke: 'black' },
+                                tickLabels: {
+                                    padding: 2,
+                                },
+                                grid: {
+                                    stroke: 'lightgrey',
+                                    strokeWidth: 0.3,
+                                    strokeDasharray: 10,
+                                },
+                            }}
+                            standalone={false}
+                        />
+                    </g>
 
-                    <g transform={'translate(0,250)'}>
+                    <g transform={'translate(10,250)'}>
                         <VictoryAxis
                             dependentAxis
                             orientation="left"
@@ -428,27 +430,29 @@ export default class MutationalBarChart extends React.Component<
                             standalone={false}
                         />
                     </g>
-                    <VictoryAxis
-                        tickValues={this.xTickLabels}
-                        width={WindowStore.size.width - 100}
-                        style={{
-                            axisLabel: {
-                                fontSize: '8px',
-                                padding: 20,
-                            },
-                            tickLabels: {
-                                fontSize: '8px',
-                                padding: 40,
-                                angle: 270,
-                                textAnchor: 'start',
-                                verticalAnchor: 'middle',
-                            },
-                            axis: { strokeWidth: 0 },
-                            grid: { stroke: 0 },
-                        }}
-                        standalone={false}
-                    />
-                    <g>
+                    <g transform={'translate(10, 0)'}>
+                        <VictoryAxis
+                            tickValues={this.xTickLabels}
+                            width={WindowStore.size.width - 100}
+                            style={{
+                                axisLabel: {
+                                    fontSize: '8px',
+                                    padding: 20,
+                                },
+                                tickLabels: {
+                                    fontSize: '8px',
+                                    padding: 40,
+                                    angle: 270,
+                                    textAnchor: 'start',
+                                    verticalAnchor: 'middle',
+                                },
+                                axis: { strokeWidth: 0 },
+                                grid: { stroke: 0 },
+                            }}
+                            standalone={false}
+                        />
+                    </g>
+                    <g transform={'translate(10, 0)'}>
                         <VictoryBar
                             barRatio={1}
                             barWidth={3}
@@ -479,7 +483,7 @@ export default class MutationalBarChart extends React.Component<
                             standalone={false}
                         />
                     </g>
-                    <g transform={'translate(0, 250)'}>
+                    <g transform={'translate(10, 250)'}>
                         <VictoryBar
                             barRatio={1}
                             barWidth={3}
