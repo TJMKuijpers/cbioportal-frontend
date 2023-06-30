@@ -14,6 +14,7 @@ import { MolecularProfile, StructuralVariant } from 'cbioportal-ts-api-client';
 
 import { deriveStructuralVariantType } from 'oncokb-frontend-commons';
 import { CustomDriverNumericGeneMolecularData } from 'shared/model/CustomDriverNumericGeneMolecularData';
+import { getServerConfig } from 'config/config';
 
 const hotspotsImg = require('../../../rootImages/cancer-hotspots.svg');
 const oncokbImg = require('oncokb-styles/images/oncogenic.svg');
@@ -50,6 +51,7 @@ function listOfMutationDataToHTML(
     multipleSamplesUnderMouse: boolean
 ) {
     const countsMap = new ListIndexedMapOfCounts();
+    console.log(data);
     for (const d of data) {
         countsMap.increment(
             d.hugo_gene_symbol,
@@ -84,30 +86,44 @@ function listOfMutationDataToHTML(
                 ],
                 value: count,
             }) => {
-                var ret = $('<span>').addClass('nobreak');
+                var ret = $('<table style="border:1px solid black">');
                 ret.append(
-                    `<b class="nobreak">${hugo_gene_symbol} ${amino_acid_change}</b>`
+                    `<tr><td border:1px solid black>Mutation</td><td border:1px solid black>${hugo_gene_symbol} ${amino_acid_change}</td></tr>`
                 );
+
                 if (cancer_hotspots_hotspot) {
                     ret.append(
-                        `<img src="${hotspotsImg}" title="Hotspot" style="height:11px; width:11px; margin-left:3px"/>`
+                        `<tr>
+                         <td>Hotspot</td>
+                         <td><img src="${hotspotsImg}" title="Hotspot" style="height:11px; width:11px; margin-left:3px"/></td>
+                        </tr>`
                     );
                 }
                 if (oncokb_oncogenic) {
                     ret.append(
-                        `<img src="${oncokbImg}" title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                         <td>Oncogenic</td>
+                         <td><img src="${oncokbImg}" title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/></td>
+                         </tr>`
                     );
                 }
                 if (mutation_type) {
-                    ret.append('<b> Mutation type</b> ' + mutation_type);
+                    ret.append(
+                        `<tr><td border:1px solid black>Mutation type </td><td border:1px solid black>${mutation_type}</td></tr>`
+                    );
                 }
                 if (mutation_status) {
-                    ret.append('<b> Mutation status: </b> ' + mutation_status);
+                    ret.append(
+                        `<tr><td border:1px solid black>Mutation status </td><td border:1px solid black>${mutation_status}</td></tr>`
+                    );
                 }
                 //If we have data for the binary custom driver annotations, append an icon to the tooltip with the annotation information
                 if (driver_filter && driver_filter === PUTATIVE_DRIVER) {
                     ret.append(
-                        `<img src="${customDriverImg}" title="${driver_filter}: ${driver_filter_annotation}" alt="driver filter" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                         <td>Driver filter</td>
+                         <td><img src="${customDriverImg}" title="${driver_filter}: ${driver_filter_annotation}" alt="driver filter" style="height:11px; width:11px;margin-left:3px"/></td>
+                         </tr>`
                     );
                 }
                 //If we have data for the binary custom driver annotations, append an icon to the tooltip with the annotation information
@@ -116,16 +132,20 @@ function listOfMutationDataToHTML(
                     driver_filter === PUTATIVE_PASSENGER
                 ) {
                     ret.append(
-                        `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="height:16px; width:16px; margin-bottom:-2px; margin-right:-2px">
+                        `<tr>
+                         <td>Putative passenger</td>
+                         <td><svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="height:16px; width:16px; margin-bottom:-2px; margin-right:-2px">
                                 <title>"${driver_filter}: ${driver_filter_annotation}"</title>
                                 <circle cx="10" cy="10" r="5" stroke="#bebebe" stroke-width="2" fill="none"/>
-                            </svg>`
+                            </svg></td></tr>`
                     );
                 }
                 //If we have data for the class custom driver annotations, append an icon to the tooltip with the annotation information
                 if (driver_tiers_filter) {
                     ret.append(
-                        `<img src="${customDriverTiersImg}" title="${driver_tiers_filter}: ${driver_tiers_filter_annotation}" alt="driver tiers filter" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                         <td>Driver tiers filter</td>
+                         <td></td><img src="${customDriverTiersImg}" title="${driver_tiers_filter}: ${driver_tiers_filter_annotation}" alt="driver tiers filter" style="height:11px; width:11px;margin-left:3px"/></td></tr>`
                     );
                 }
 
@@ -168,19 +188,27 @@ function listOfStructuralVariantDataToHTML(
                 ],
                 value: count,
             }) => {
-                var ret = $('<span>').addClass('nobreak');
+                var ret = $('<table style="border:1px solid black">');
                 ret.append(
-                    `<b class="nobreak">${site1HugoSymbol || ''}${
-                        site2HugoSymbol ? '-' + site2HugoSymbol : ''
-                    }${
-                        variantClass && variantClass !== 'NA'
-                            ? ', ' + variantClass + ','
-                            : ''
-                    } Event Info: ${eventInfo}</b>`
+                    `<tr><td border:1px solid black>Site 1: </td><td border:1px solid black>${site1HugoSymbol}</td></tr>`
                 );
+                if (site2HugoSymbol) {
+                    ret.append(
+                        `<tr><td border:1px solid black>Site 2: </td><td border:1px solid black>${site2HugoSymbol}</td></tr>`
+                    );
+                }
+                ret.append(
+                    `<tr><td border:1px solid black>Variant class: </td><td border:1px solid black>${variantClass}</td></tr>`
+                );
+                ret.append(`
+                       <tr>
+                       <td border:1px solid black>Event info: </td><td border:1px solid black>${eventInfo}</td>
+                       </tr>`);
                 if (oncokb_oncogenic) {
                     ret.append(
-                        `<img src="${oncokbImg}" title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                            <td border:1px solid black;><img src="${oncokbImg}" title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/></td>
+                        </tr>`
                     );
                 }
 
@@ -188,6 +216,7 @@ function listOfStructuralVariantDataToHTML(
                 if (multipleSamplesUnderMouse) {
                     ret.append(`&nbsp;(${count})`);
                 }
+                console.log(ret);
                 return ret;
             }
         );
@@ -220,29 +249,44 @@ function listOfCNAToHTML(data: any[], multipleSamplesUnderMouse: boolean) {
                 ],
                 value: count,
             }) => {
-                var ret = $('<span>').addClass('nobreak');
-                ret.append(`<b class="nobreak">${hugo_gene_symbol} ${cna}</b>`);
+                var ret = $('<table style="border:1px solid black">');
+                ret.append(
+                    `<tr><td border:1px solid black>Gene: </td><td border:1px solid black>${hugo_gene_symbol}</td></tr>`
+                );
+                ret.append(
+                    `<tr><td border:1px solid black>Alteration: </td><td border:1px solid black>${cna}</td></tr>`
+                );
                 if (oncokb_oncogenic) {
                     ret.append(
-                        `<img src=${oncokbImg} title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                            <td border:1px solid black;>Oncogenic</td>
+                            <td border:1px solid black;><img src=${oncokbImg} title="${oncokb_oncogenic}" style="height:11px; width:11px;margin-left:3px"/></td>
+                            </tr>`
                     );
                 }
                 //If we have data for the binary custom driver annotations, append an icon to the tooltip with the annotation information
                 if (driver_filter && driver_filter === PUTATIVE_DRIVER) {
                     ret.append(
-                        `<img src="${customDriverImg}" title="${driver_filter}: ${driver_filter_annotation}" alt="driver filter" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                                <td border:1px solid black;>Driver filter</td>
+                                <td border:1px solid black;><img src="${customDriverImg}" title="${driver_filter}: ${driver_filter_annotation}" alt="driver filter" style="height:11px; width:11px;margin-left:3px"/></td>
+                        </tr>`
                     );
                 }
                 //If we have data for the class custom driver annotations, append an icon to the tooltip with the annotation information
                 if (driver_tiers_filter) {
                     ret.append(
-                        `<img src="${customDriverTiersImg}" title="${driver_tiers_filter}: ${driver_tiers_filter_annotation}" alt="driver tiers filter" style="height:11px; width:11px;margin-left:3px"/>`
+                        `<tr>
+                                <td border:1px solid black;>Driver tiers filter</td>     
+                                <td border:1px solid black;><img src="${customDriverTiersImg}" title="${driver_tiers_filter}: ${driver_tiers_filter_annotation}" alt="driver tiers filter" style="height:11px; width:11px;margin-left:3px"/></td>
+                                </tr>`
                     );
                 }
                 // finally, add the number of samples with this, if multipleSamplesUnderMouse
                 if (multipleSamplesUnderMouse) {
                     ret.append(`&nbsp;(${count})`);
                 }
+                ret.append('</table>');
                 return ret;
             }
         );
@@ -288,6 +332,7 @@ export function makeGeneticTrackTooltip(
             '<br/>'
         );
         // Get the portal properties that define if extra fields should be visseble
+        console.log(dataUnderMouse);
         const information = groupByMutationInformation(dataUnderMouse);
         const alterations = groupAlterationsByType(dataUnderMouse);
         let mutations: any[] = alterations.mutations;
@@ -295,7 +340,6 @@ export function makeGeneticTrackTooltip(
         let mrna: any[] = alterations.mrna;
         let prot: any[] = alterations.prot;
         let structuralVariants: any[] = alterations.structuralVariants;
-
         if (structuralVariants.length > 0) {
             ret.append('Structural Variant: ');
             structuralVariants = listOfStructuralVariantDataToHTML(
@@ -534,6 +578,30 @@ function groupByVariantInformation(dataUnderMouse: DataUnderMouse) {
     let eventInfo: any = [];
     let cohort: any = [];
     let cosmic: any = [];
+    const portalProperties = getServerConfig();
+    if (
+        portalProperties.oncoprint_tooltip_fields_mutation?.includes('Cosmic')
+    ) {
+        // Get the cosmic information to show in the tooltip
+    }
+    if (
+        portalProperties.oncoprint_tooltip_fields_mutation?.includes('Cohort')
+    ) {
+        // Get the cohort information
+    }
+}
+
+function retrieveCopyNumberAlterationInformation(
+    dataUnderMouse: DataUnderMouse
+) {
+    const portalProperties = getServerConfig();
+    if (
+        portalProperties.oncoprint_tooltip_fields_mutation?.includes('Cohort')
+    ) {
+        // Get the cohort information from CNA
+    }
+    if (portalProperties.oncoprint_tooltip_fields_cna !== 'Cytoband') {
+    }
 }
 
 function groupByMutationInformation(dataUnderMouse: DataUnderMouse) {
@@ -559,10 +627,10 @@ function groupAlterationsByType(dataUnderMouse: DataUnderMouse) {
     let mrna: any[] = [];
     let prot: any[] = [];
     let structuralVariants: any[] = [];
+    retrieveCopyNumberAlterationInformation(dataUnderMouse);
     // collect all data under mouse
     for (const d of dataUnderMouse) {
         for (let i = 0; i < d.data.length; i++) {
-            console.log(d.data[i]);
             const datum = d.data[i];
             const molecularAlterationType =
                 datum.molecularProfileAlterationType;
@@ -577,7 +645,6 @@ function groupAlterationsByType(dataUnderMouse: DataUnderMouse) {
                     tooltip_datum.mutation_type = datum.mutationType;
                     tooltip_datum.oncokb_oncogenic = datum.oncoKbOncogenic;
                     tooltip_datum.hotspot = datum.isHotspot;
-                    tooltip_datum.variantType = datum.variantType;
                     tooltip_datum.driver_filter_annotation =
                         datum.driverFilterAnnotation;
                     tooltip_datum.driver_tiers_filter = datum.driverTiersFilter;
