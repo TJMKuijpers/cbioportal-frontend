@@ -25,7 +25,6 @@ import _ from 'lodash';
 import { ButtonGroup, Button } from 'react-bootstrap';
 
 import MutationalBarChart from 'pages/patientView/mutationalSignatures/MutationalSignatureBarChart';
-import SignatureTextBox from 'pages/patientView/mutationalSignatures/SignatureTextBox';
 import { getPercentageOfMutationalCount } from './MutationalSignatureBarChartUtils';
 import {
     DefaultTooltip,
@@ -75,19 +74,22 @@ export default class MutationalSignaturesContainer extends React.Component<
     @observable signatureURL: string;
     @observable signatureDescription: string;
     @observable signatureInformationToolTipVisible: boolean = false;
+    @observable updateReferencePlot: boolean = false;
     public static defaultProps: Partial<IAxisScaleSwitchProps> = {
         selectedScale: AxisScale.COUNT,
     };
-    @observable
-    public mutationalSignatureDataStore: MutationalSignatureTableDataStore = new MutationalSignatureTableDataStore(
-        () => this.props.data[this.props.version].map(x => [x])
-    );
 
     @observable
     selectedScale: string = AxisScale.COUNT;
-    mutationalProfileSelection = (childData: string, visibility: boolean) => {
+    mutationalProfileSelection = (
+        childData: string,
+        visibility: boolean,
+        updateReference: boolean
+    ) => {
+        console.log(this.props.data);
         this.signatureProfile = childData;
         this.signatureInformationToolTipVisible = visibility;
+        this.updateReferencePlot = updateReference;
         this.signatureURL = this.props.data[this.props.version].filter(obj => {
             if (childData === obj.meta.name) {
                 return obj;
@@ -361,6 +363,10 @@ export default class MutationalSignaturesContainer extends React.Component<
                             version={this.props.version}
                             sample={this.props.sample}
                             label={this.yAxisLabel}
+                            updateReference={this.updateReferencePlot}
+                            initialReference={
+                                this.props.data[this.props.version][0].meta.name
+                            }
                         />
                     )}
                 </div>
@@ -370,7 +376,6 @@ export default class MutationalSignaturesContainer extends React.Component<
                         <ClinicalInformationMutationalSignatureTable
                             data={this.props.data[this.props.version]}
                             parentCallback={this.mutationalProfileSelection}
-                            dataStore={this.mutationalSignatureDataStore}
                             url={this.signatureURL}
                             description={this.signatureDescription}
                             signature={this.signatureProfile}

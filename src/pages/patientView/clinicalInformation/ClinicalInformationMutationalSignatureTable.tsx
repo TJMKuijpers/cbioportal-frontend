@@ -11,14 +11,16 @@ import { observer } from 'mobx-react';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { MUTATIONAL_SIGNATURES_SIGNIFICANT_PVALUE_THRESHOLD } from 'shared/lib/GenericAssayUtils/MutationalSignaturesUtils';
 import Tooltip from 'rc-tooltip';
-import FeatureInstruction from 'shared/FeatureInstruction/FeatureInstruction';
 import autobind from 'autobind-decorator';
 import { MutationalSignatureTableDataStore } from '../mutationalSignatures/MutationalSignaturesDataStore';
-import PatientViewUrlWrapper from 'pages/patientView/PatientViewUrlWrapper';
+
 export interface IClinicalInformationMutationalSignatureTableProps {
     data: IMutationalSignature[];
-    parentCallback: (childData: string, visibility: boolean) => void;
-    dataStore: MutationalSignatureTableDataStore;
+    parentCallback: (
+        childData: string,
+        visibility: boolean,
+        updateReference: boolean
+    ) => void;
     url: string;
     signature: string;
     description: string;
@@ -80,9 +82,14 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
     {}
 > {
     @observable selectedSignature = '';
+    @observable
+    public mutationalSignatureDataStore: MutationalSignatureTableDataStore;
     constructor(props: IClinicalInformationMutationalSignatureTableProps) {
         super(props);
         makeObservable(this);
+        this.mutationalSignatureDataStore = new MutationalSignatureTableDataStore(
+            () => this.tableData
+        );
     }
 
     @action.bound getMutationalSignatureProfileData(
@@ -102,19 +109,11 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
     onMutationalSignatureTableRowMouseEnter(d: IMutationalSignatureRow) {}
     @autobind
     onMutationalSignatureTableRowClick(d: IMutationalSignatureRow) {
-        console.log('this is what we send to the setSelectedMutSig');
-        const dSend = this.props.data.filter(x => x.meta.name === d.name);
         // select mutation and toggle off previous selected
-        if (dSend.length) {
-            this.props.dataStore.setSelectedMutSig(dSend);
-            if (this.props.dataStore.selectedMutSig.length > 0) {
-                this.props.dataStore.toggleSelectedMutSig(
-                    this.props.dataStore.selectedMutSig[0]
-                );
-            }
-            //this.handleLocusChange(d[0].gene.hugoGeneSymbol);
-        }
-        this.props.parentCallback(d.name, false);
+        /*
+        this.mutationalSignatureDataStore.toggleSelectedMutSig(d)
+*/
+        this.props.parentCallback(d.name, false, true);
     }
 
     @computed get tableData() {
@@ -150,7 +149,19 @@ export default class ClinicalInformationMutationalSignatureTable extends React.C
             {
                 name: 'Mutational Signature',
                 render: (data: IMutationalSignatureRow) => (
-                    <span>{data[this.firstCol]}</span>
+                    <Tooltip overlay={this.tooltipInfo}>
+                        <span
+                            onMouseOver={() =>
+                                this.props.parentCallback(
+                                    data.name,
+                                    false,
+                                    false
+                                )
+                            }
+                        >
+                            {data[this.firstCol]}
+                        </span>
+                    </Tooltip>
                 ),
                 download: (data: IMutationalSignatureRow) =>
                     `${data[this.firstCol]}`,
