@@ -426,6 +426,11 @@ export function makeGeneticTrackTooltip(
         if (structuralVariants.length > 0) {
             ret.append('Structural Variant: ');
             if (getServerConfig.oncoprint_tooltip_extended_table) {
+                structuralVariants = createExtensiveDescriptionTable(
+                    structuralVariants,
+                    dataUnderMouse.length > 1,
+                    'structuralvariant'
+                );
                 // Create a table with organized information
                 // TODO implement this function here
             } else {
@@ -446,9 +451,10 @@ export function makeGeneticTrackTooltip(
         if (mutations.length > 0) {
             ret.append('Mutation: ');
             if (getServerConfig().oncoprint_tooltip_extended_table) {
-                mutations = createExtensiveMutationDataDescriptionTable(
+                mutations = createExtensiveDescriptionTable(
                     mutations,
-                    dataUnderMouse.length > 1
+                    dataUnderMouse.length > 1,
+                    'mutation'
                 );
                 ret.append(mutations);
             } else {
@@ -469,9 +475,10 @@ export function makeGeneticTrackTooltip(
         if (cna.length > 0) {
             ret.append('Copy Number Alteration: ');
             if (getServerConfig().oncoprint_tooltip_extended_table) {
-                cna = createExtensiveCNADataDescriptionTable(
+                cna = createExtensiveDescriptionTable(
                     cna,
-                    dataUnderMouse.length > 1
+                    dataUnderMouse.length > 1,
+                    'cna'
                 );
                 ret.append(cna);
             } else {
