@@ -45,23 +45,48 @@ const disp_cna: { [integerCN: string]: string } = {
     '2': 'AMPLIFIED',
 };
 
-function createExtensiveMutationDataDescriptionTable(
+function createExtensiveDescriptionTable(
     data: any[],
-    multipleSamplesUnderMouse: boolean
+    multipleSamplesUnderMouse: boolean,
+    dataType: string
 ) {
     const countsMap = new ListIndexedMapOfCounts();
-    for (const d of data) {
-        countsMap.increment(
-            d.hugo_gene_symbol,
-            d.amino_acid_change,
-            d.cancer_hotspots_hotspot,
-            d.oncokb_oncogenic,
-            d.driver_filter,
-            d.driver_filter_annotation,
-            d.driver_tiers_filter,
-            d.driver_tiers_filter_annotation,
-            d.germline
-        );
+    if (dataType == 'Mutation') {
+        for (const d of data) {
+            countsMap.increment(
+                d.hugo_gene_symbol,
+                d.amino_acid_change,
+                d.cancer_hotspots_hotspot,
+                d.oncokb_oncogenic,
+                d.driver_filter,
+                d.driver_filter_annotation,
+                d.driver_tiers_filter,
+                d.driver_tiers_filter_annotation,
+                d.germline
+            );
+        }
+    } else if (dataType == 'cna') {
+        for (const d of data) {
+            countsMap.increment(
+                d.hugo_gene_symbol,
+                d.cna,
+                d.oncokb_oncogenic,
+                d.driver_filter,
+                d.driver_filter_annotation,
+                d.driver_tiers_filter,
+                d.driver_tiers_filter_annotation
+            );
+        }
+    } else if (dataType == 'structuralvariant') {
+        for (const d of data) {
+            countsMap.increment(
+                d.site1HugoSymbol,
+                d.site2HugoSymbol,
+                d.eventInfo,
+                deriveStructuralVariantType(d),
+                d.oncokb_oncogenic
+            );
+        }
     }
     const ret: Cheerio = $('<table style="border: 1px solid">');
     let rows = [];
@@ -76,7 +101,6 @@ function createExtensiveMutationDataDescriptionTable(
                 '</b></td>'
         )
     );
-    console.log(data);
     data.map(entry => {
         columnIndexStrings[0].map((columnName, i) => {
             if (columnName == 'cancer_hotspots_hotspot') {
