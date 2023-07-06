@@ -14,6 +14,7 @@ import { MolecularProfile, StructuralVariant } from 'cbioportal-ts-api-client';
 
 import { deriveStructuralVariantType } from 'oncokb-frontend-commons';
 import { CustomDriverNumericGeneMolecularData } from 'shared/model/CustomDriverNumericGeneMolecularData';
+import { getServerConfig } from 'config/config';
 
 const hotspotsImg = require('../../../rootImages/cancer-hotspots.svg');
 const oncokbImg = require('oncokb-styles/images/oncogenic.svg');
@@ -44,8 +45,7 @@ const disp_cna: { [integerCN: string]: string } = {
     '2': 'AMPLIFIED',
 };
 
-// TODO: all the data here is old API data
-function listOfMutationDataToHTML(
+function createExtensiveMutationDataDescriptionTable(
     data: any[],
     multipleSamplesUnderMouse: boolean
 ) {
@@ -63,14 +63,73 @@ function listOfMutationDataToHTML(
             d.germline
         );
     }
-    const ret = $('<table style="border: 1px solid">');
-    /*   ret.append(`<tr><td>Mutation</td></tr>`)
-    ret.append(`<tr><td>Hotspot</td></tr>`)
-    ret.append(`<tr><td>Oncogenic</td></tr>`)*/
+    const ret: Cheerio = $('<table style="border: 1px solid">');
     let rows = [];
-    rows.push('<td>Mutation</td>');
-    rows.push('<td>Hotspot</td>');
-    rows.push('<td>Oncogenic</td>');
+    const columnIndexStrings = data.map(x =>
+        Object.keys(x).filter(i => x[i] != undefined)
+    );
+    Object.values(columnIndexStrings[0]).map(x =>
+        rows.push(
+            '<td style="border: 1px solid">' +
+                '<b>' +
+                x.replaceAll('_', ' ') +
+                '</b></td>'
+        )
+    );
+    console.log(data);
+    data.map(entry => {
+        columnIndexStrings[0].map((columnName, i) => {
+            if (columnName == 'cancer_hotspots_hotspot') {
+                if (entry[columnName]) {
+                    rows[i] =
+                        rows[i] +
+                        '<td style="border: 1px solid">' +
+                        `<img src="${hotspotsImg}" title="Hotspot" style="height:11px; width:11px; margin-left:3px"/>` +
+                        '</td>';
+                }
+            } else if (columnName == 'oncokb_oncogenic') {
+                rows[i] =
+                    rows[i] +
+                    '<td style="border: 1px solid">' +
+                    `<img src="${oncokbImg}" title="oncogenic" style="height:11px; width:11px;margin-left:3px"/>` +
+                    '</td>';
+            } else {
+                rows[i] =
+                    rows[i] +
+                    '<td style="border: 1px solid">' +
+                    entry[columnName] +
+                    '</td>';
+            }
+        });
+    });
+    rows.map(x => {
+        ret.append('<tr style="border: 1px solid">' + x + '</tr>');
+    });
+    ret.append('</table>');
+    return ret;
+}
+
+function createExtensiveCNADataDescriptionTable(
+    data: any[],
+    multipleSamplesUnderMouse: boolean
+) {
+    const countsMap = new ListIndexedMapOfCounts();
+    for (const d of data) {
+        countsMap.increment(
+            d.hugo_gene_symbol,
+            d.cna,
+            d.oncokb_oncogenic,
+            d.driver_filter,
+            d.driver_filter_annotation,
+            d.driver_tiers_filter,
+            d.driver_tiers_filter_annotation
+        );
+    }
+    const ret: Cheerio = $('<table style="border: 1px solid">');
+    let rows = [];
+    rows.push('<td style="border: 1px solid">Alteration</td>');
+    rows.push('<td style="border: 1px solid">Oncogenic</td>');
+    rows.push('<td style="border: 1px solid">Driver filter</td>');
     countsMap.entries().map(item => {
         rows[0] =
             rows[0] +
@@ -91,27 +150,48 @@ function listOfMutationDataToHTML(
             '</td>';
     });
     rows.map(x => {
-        ret.append('<tr>' + x + '</tr>');
+        ret.append('<tr style="border: 1px solid">' + x + '</tr>');
     });
     ret.append('</table>');
     return ret;
-    /*return countsMap
+}
+
+// TODO: all the data here is old API data
+function listOfMutationDataToHTML(
+    data: any[],
+    multipleSamplesUnderMouse: boolean
+) {
+    const countsMap = new ListIndexedMapOfCounts();
+    for (const d of data) {
+        countsMap.increment(
+            d.hugo_gene_symbol,
+            d.amino_acid_change,
+            d.cancer_hotspots_hotspot,
+            d.oncokb_oncogenic,
+            d.driver_filter,
+            d.driver_filter_annotation,
+            d.driver_tiers_filter,
+            d.driver_tiers_filter_annotation,
+            d.germline
+        );
+    }
+    return countsMap
         .entries()
         .map(
             ({
-                 key: [
-                     hugo_gene_symbol,
-                     amino_acid_change,
-                     cancer_hotspots_hotspot,
-                     oncokb_oncogenic,
-                     driver_filter,
-                     driver_filter_annotation,
-                     driver_tiers_filter,
-                     driver_tiers_filter_annotation,
-                     germline,
-                 ],
-                 value: count,
-             }) => {
+                key: [
+                    hugo_gene_symbol,
+                    amino_acid_change,
+                    cancer_hotspots_hotspot,
+                    oncokb_oncogenic,
+                    driver_filter,
+                    driver_filter_annotation,
+                    driver_tiers_filter,
+                    driver_tiers_filter_annotation,
+                    germline,
+                ],
+                value: count,
+            }) => {
                 var ret = $('<span>').addClass('nobreak');
                 ret.append(
                     `<b class="nobreak">${hugo_gene_symbol} ${amino_acid_change}</b>`
@@ -161,7 +241,7 @@ function listOfMutationDataToHTML(
                 }
                 return ret;
             }
-        );*/
+        );
 }
 function listOfStructuralVariantDataToHTML(
     data: any[],
@@ -321,42 +401,63 @@ export function makeGeneticTrackTooltip(
 
         if (structuralVariants.length > 0) {
             ret.append('Structural Variant: ');
-            structuralVariants = listOfStructuralVariantDataToHTML(
-                structuralVariants,
-                dataUnderMouse.length > 1
-            );
-            for (let i = 0; i < structuralVariants.length; i++) {
-                if (i > 0) {
-                    ret.append(',');
+            if (getServerConfig.oncoprint_tooltip_extended_table) {
+                // Create a table with organized information
+                // TODO implement this function here
+            } else {
+                structuralVariants = listOfStructuralVariantDataToHTML(
+                    structuralVariants,
+                    dataUnderMouse.length > 1
+                );
+                for (let i = 0; i < structuralVariants.length; i++) {
+                    if (i > 0) {
+                        ret.append(',');
+                    }
+                    ret.append(structuralVariants[i]);
                 }
-                ret.append(structuralVariants[i]);
+                ret.append('<br>');
             }
-            ret.append('<br>');
         }
 
         if (mutations.length > 0) {
             ret.append('Mutation: ');
-            mutations = listOfMutationDataToHTML(
-                mutations,
-                dataUnderMouse.length > 1
-            );
-            for (var i = 0; i < mutations.length; i++) {
-                if (i > 0) {
-                    ret.append(', ');
+            if (getServerConfig().oncoprint_tooltip_extended_table) {
+                mutations = createExtensiveMutationDataDescriptionTable(
+                    mutations,
+                    dataUnderMouse.length > 1
+                );
+                ret.append(mutations);
+            } else {
+                mutations = listOfMutationDataToHTML(
+                    mutations,
+                    dataUnderMouse.length > 1
+                );
+                for (var i = 0; i < mutations.length; i++) {
+                    if (i > 0) {
+                        ret.append(', ');
+                    }
+                    ret.append(mutations[i]);
                 }
-                ret.append(mutations[i]);
+                ret.append('<br>');
             }
-            ret.append('<br>');
         }
 
         if (cna.length > 0) {
             ret.append('Copy Number Alteration: ');
-            cna = listOfCNAToHTML(cna, dataUnderMouse.length > 1);
-            for (var i = 0; i < cna.length; i++) {
-                if (i > 0) {
-                    ret.append(', ');
+            if (getServerConfig().oncoprint_tooltip_extended_table) {
+                cna = createExtensiveCNADataDescriptionTable(
+                    cna,
+                    dataUnderMouse.length > 1
+                );
+                ret.append(cna);
+            } else {
+                cna = listOfCNAToHTML(cna, dataUnderMouse.length > 1);
+                for (var i = 0; i < cna.length; i++) {
+                    if (i > 0) {
+                        ret.append(', ');
+                    }
+                    ret.append(cna[i]);
                 }
-                ret.append(cna[i]);
             }
             ret.append('<br>');
         }
