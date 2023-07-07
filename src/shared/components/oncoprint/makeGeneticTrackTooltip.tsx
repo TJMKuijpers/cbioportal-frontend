@@ -88,21 +88,24 @@ function createExtensiveDescriptionTable(
             );
         }
     }
-    const ret: Cheerio = $('<table style="border: 1px solid">');
+    const ret: Cheerio = $('<table   class="table" style="border: 1px solid">');
     let rows = [];
-    const columnIndexStrings = data.map(x =>
+    let columnIndexStrings = data.map(x =>
         Object.keys(x).filter(i => x[i] != undefined)
-    );
-    Object.values(columnIndexStrings[0]).map(x =>
+    )[0];
+    if (dataType == 'mutation') {
+        columnIndexStrings[0] = 'Mutation';
+    }
+    Object.values(columnIndexStrings).map(x =>
         rows.push(
-            '<td style="border: 1px solid">' +
+            '<td class="nowrap" style="border: 1px solid">' +
                 '<b>' +
                 x.replaceAll('_', ' ') +
                 '</b></td>'
         )
     );
     data.map(entry => {
-        columnIndexStrings[0].map((columnName, i) => {
+        columnIndexStrings.map((columnName, i) => {
             if (columnName == 'cancer_hotspots_hotspot') {
                 if (entry[columnName]) {
                     rows[i] =
@@ -118,11 +121,21 @@ function createExtensiveDescriptionTable(
                     `<img src="${oncokbImg}" title="oncogenic" style="height:11px; width:11px;margin-left:3px"/>` +
                     '</td>';
             } else {
-                rows[i] =
-                    rows[i] +
-                    '<td style="border: 1px solid">' +
-                    entry[columnName] +
+                if (columnName == 'Mutation') {
+                    rows[i] =
+                        rows[i] +
+                        '<td style="border: 1px solid">' +
+                        entry['hugo_gene_symbol'] +
+                        ' ' +
+                        entry['amino_acid_change'];
                     '</td>';
+                } else {
+                    rows[i] =
+                        rows[i] +
+                        '<td style="border: 1px solid">' +
+                        entry[columnName] +
+                        '</td>';
+                }
             }
         });
     });
@@ -471,7 +484,6 @@ export function makeGeneticTrackTooltip(
                 ret.append('<br>');
             }
         }
-
         if (cna.length > 0) {
             ret.append('Copy Number Alteration: ');
             if (getServerConfig().oncoprint_tooltip_extended_table) {

@@ -93,6 +93,7 @@ import {
     mapSampleIdToClinicalData,
     ONCOKB_DEFAULT,
     fetchOncoKbInfo,
+    fetchCosmicData,
 } from 'shared/lib/StoreUtils';
 import {
     CoverageInformation,
@@ -2007,6 +2008,8 @@ export class ResultsViewPageStore extends AnalysisStore
                 ...this.filteredAndAnnotatedMolecularData.result!,
                 ...this.filteredAndAnnotatedStructuralVariants.result!,
             ];
+            console.log('PatientViewPageStore');
+            console.log(this);
             const accessorsInstance = new AccessorsForOqlFilter(
                 this.selectedMolecularProfiles.result!
             );
@@ -5166,6 +5169,7 @@ export class ResultsViewPageStore extends AnalysisStore
                     this._filteredAndAnnotatedMolecularDataReport.result!.vus
                 );
             }
+
             const filteredSampleKeyToSample = this.filteredSampleKeyToSample
                 .result!;
             return Promise.resolve(
@@ -5893,5 +5897,48 @@ export class ResultsViewPageStore extends AnalysisStore
         return this.oncoKbInfo.result
             ? this.oncoKbInfo.result.publicInstance
             : USE_DEFAULT_PUBLIC_INSTANCE_FOR_ONCOKB;
+    }
+    @computed get retrieveUserDefinedPortalProperties() {
+        const portalProperties = getServerConfig();
+        if (portalProperties.oncoprint_tooltip_fields_cna !== null) {
+            if (
+                portalProperties.oncoprint_tooltip_fields_cna
+                    .map(x => x.toUpperCase())
+                    .includes('CYTOBAND')
+            ) {
+                const cytoband = this.referenceGenes.result!.filter(x =>
+                    this.filteredAndAnnotatedMolecularData
+                        .result!.map(molData => molData.gene.hugoGeneSymbol)
+                        .includes(x.hugoGeneSymbol)
+                );
+            }
+        }
+        if (portalProperties.oncoprint_tooltip_fields_mutation !== null) {
+            if (
+                portalProperties.oncoprint_tooltip_fields_mutation
+                    .map(x => x.toUpperCase())
+                    .includes('COHORT')
+            ) {
+                const cohort = this.alterationFrequencyDataForQueryGenes;
+            }
+            if (
+                portalProperties.oncoprint_tooltip_fields_mutation
+                    .map(x => x.toUpperCase())
+                    .includes('COSMIC')
+            ) {
+                const cosmicData = remoteData({
+                    await: () => [this.mutationData, this.uncalledMutationData],
+                    invoke: () =>
+                        fetchCosmicData(
+                            this.mutationData,
+                            this.uncalledMutationData
+                        ),
+                });
+            }
+        }
+        if (portalProperties.oncoprint_tooltip_fields_structvar !== null) {
+            // append the defined fields to 'this'
+        }
+        return null;
     }
 }
