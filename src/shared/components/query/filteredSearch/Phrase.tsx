@@ -18,6 +18,10 @@ export interface Phrase {
     toString(): string;
     match(searchNode: FullTextSearchNode): boolean;
     equals(other: Phrase): boolean;
+    dataCountPerDataType(
+        searchNode: FullTextSearchNode,
+        keyValue: string[]
+    ): boolean;
 }
 
 /**
@@ -67,6 +71,12 @@ export class StringPhrase implements Phrase {
         return anyFieldMatch;
     }
 
+    public dataCountPerDataType(
+        study: FullTextSearchNode,
+        keyValue: string[]
+    ): boolean {
+        return countPerDataType(study, this._fields, keyValue);
+    }
     equals(other: Phrase): boolean {
         if (!other) {
             return false;
@@ -143,6 +153,13 @@ export class ListPhrase implements Phrase {
         return anyFieldMatch;
     }
 
+    public dataCountPerDataType(
+        study: FullTextSearchNode,
+        keyValue: string[]
+    ): boolean {
+        return countPerDataType(study, this._fields, keyValue);
+    }
+
     equals(other: Phrase): boolean {
         if (!other) {
             return false;
@@ -170,4 +187,27 @@ function matchPhrase(phrase: string, fullText: string) {
  */
 function matchPhraseFull(phrase: string, fullText: string) {
     return fullText.toLowerCase() === phrase.toLowerCase();
+}
+
+/**
+ Function to retrieve whether a data-type has data (value > 0)
+*/
+function countPerDataType(
+    study: FullTextSearchNode,
+    fields: FullTextSearchFields[],
+    keyValue: string[]
+): boolean {
+    const fieldValueBoolean: string[] = fields.filter(
+        (x: FullTextSearchFields) => keyValue.includes(x)
+    );
+    const countDataType: boolean[] = fieldValueBoolean.map(
+        (x: FullTextSearchFields) => {
+            if (x === 'mrnaRnaSeqV2SampleCount') {
+                return study[x]! > 0 || study['mrnaRnaSeqSampleCount']! > 0;
+            } else {
+                return study[x]! > 0;
+            }
+        }
+    );
+    return countDataType.every(v => v);
 }

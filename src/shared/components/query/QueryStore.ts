@@ -632,7 +632,7 @@ export class QueryStore {
     );
 
     readonly cancerStudies = remoteData(
-        client.getAllStudiesUsingGET({ projection: 'SUMMARY' }),
+        client.getAllStudiesUsingGET({ projection: 'DETAILED' }),
         []
     );
 

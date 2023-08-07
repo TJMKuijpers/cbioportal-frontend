@@ -8,11 +8,15 @@ import * as React from 'react';
 import { FunctionComponent } from 'react';
 import { ListFilterField } from 'shared/components/query/filteredSearch/field/ListFormField';
 import { CheckboxFilterField } from 'shared/components/query/filteredSearch/field/CheckboxFilterField';
+import { dataTypeFilterField } from 'shared/components/query/filteredSearch/field/dataTypeFilterField';
 
 /**
  * Can be extended with additional input fields
  */
-export type FilterField = CheckboxFilterField | ListFilterField;
+export type FilterField =
+    | CheckboxFilterField
+    | ListFilterField
+    | dataTypeFilterField;
 
 export type FieldProps = {
     filter: CancerTreeSearchFilter;

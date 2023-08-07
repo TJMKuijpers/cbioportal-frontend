@@ -75,6 +75,10 @@ export function getCancerGeneToggledOverlay(cancerGeneFilterEnabled: boolean) {
     }
 }
 
+export function getDataTypeStudyOverlay(name: string) {
+    return <span>Add 'AND' filter for {name}</span>;
+}
+
 export function getCancerGeneFilterToggleIcon(
     isFilteredByCancerGeneList: boolean
 ) {
