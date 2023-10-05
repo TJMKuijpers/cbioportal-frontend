@@ -1,11 +1,5 @@
 import * as React from 'react';
-import {
-    VictoryBar,
-    VictoryAxis,
-    VictoryChart,
-    VictoryLabel,
-    VictoryTooltip,
-} from 'victory';
+import { VictoryBar, VictoryAxis, VictoryLabel, VictoryTooltip } from 'victory';
 import { action, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import WindowStore from 'shared/components/window/WindowStore';
@@ -14,19 +8,17 @@ import _ from 'lodash';
 import { IMutationalCounts } from 'shared/model/MutationalSignature';
 import {
     getColorsForSignatures,
-    ColorMapProps,
-    colorMap,
     IColorDataBar,
-    IColorLegend,
     getLegendEntriesBarChart,
     getxScalePoint,
-    LegendLabelsType,
     DrawRectInfo,
     LabelInfo,
     getLengthLabelEntries,
     createLegendLabelObjects,
     formatLegendObjectsForRectangles,
     getCenterPositionLabelEntries,
+    DataToPlot,
+    addColorsForReferenceData,
 } from './MutationalSignatureBarChartUtils';
 import { CBIOPORTAL_VICTORY_THEME } from 'cbioportal-frontend-commons';
 
@@ -41,6 +33,8 @@ export interface IMutationalBarChartProps {
     version: string;
     sample: string;
     label: string;
+    initialReference: string;
+    updateReference: boolean;
 }
 
 const theme = _.cloneDeep(CBIOPORTAL_VICTORY_THEME);
@@ -50,6 +44,13 @@ theme.legend.style.data = {
     strokeWidth: 0,
     stroke: 'black',
 };
+type FrequencyData = { channel: string; frequency: number };
+
+type SignatureData = { [signature: string]: FrequencyData };
+
+type VersionData = { [version: string]: SignatureData };
+
+const cosmicReferenceData = require('./cosmic_reference.json');
 
 @observer
 export default class MutationalBarChart extends React.Component<
@@ -75,7 +76,11 @@ export default class MutationalBarChart extends React.Component<
                 return current.value < previous.value ? current : previous;
             }
         );
-        return [minValue.value, maxValue.value + 0.1 * maxValue.value];
+        if (minValue.value !== maxValue.value) {
+            return [minValue.value, maxValue.value + 0.1 * maxValue.value];
+        } else {
+            return [0, 10];
+        }
     }
 
     @computed get getGroupedData() {
@@ -125,7 +130,7 @@ export default class MutationalBarChart extends React.Component<
                     y={8}
                     width={this.props.width}
                     text={item.group}
-                    style={{ fontSize: '13px', padding: 5 }}
+                    style={{ fontSize: '15px', padding: 5, fontWeight: 'bold' }}
                     textAnchor={'middle'}
                 />
             );
@@ -144,7 +149,7 @@ export default class MutationalBarChart extends React.Component<
         const xScale = getxScalePoint(
             legendLabels,
             60,
-            WindowStore.size.width - 90
+            WindowStore.size.width - 115
         );
         const legendEntries = getLegendEntriesBarChart(legendLabels);
         const lengthLegendObjects = getLengthLabelEntries(legendEntries);
@@ -166,7 +171,7 @@ export default class MutationalBarChart extends React.Component<
                             ? xScale(item.end)! - xScale(item.start)!
                             : 6
                     }
-                    height="15"
+                    height="20"
                 />
             );
         });
@@ -212,10 +217,10 @@ export default class MutationalBarChart extends React.Component<
                         centerOfBoxes[i].props.x +
                         0.5 * centerOfBoxes[i].props.width
                     }
-                    y={37}
+                    y={25}
                     width={this.props.width}
                     text={item.category}
-                    style={{ fontSize: '10px' }}
+                    style={{ fontSize: '15', fontWeight: 'bold' }}
                     textAnchor={'middle'}
                 />
             );
@@ -223,114 +228,338 @@ export default class MutationalBarChart extends React.Component<
         return legendLabelsChart;
     }
 
-    @action getLabelsForTooltip(data: IMutationalCounts[]): string[] {
+    @computed get formatLabelsCosmicStyle(): string[] {
+        const labels = this.getLabels(this.props.data);
+        const cosmicLabel: string[] = [];
+        if (this.props.version == 'SBS') {
+            labels.map(label => {
+                const labelSplit = label
+                    .split('_')
+                    .map((x, i) => {
+                        return i == 1 ? '(' + x.split('-')[0] + ')' : x;
+                    })
+                    .join('');
+                cosmicLabel.push(labelSplit);
+            });
+        } else if (this.props.version == 'DBS') {
+            labels.map(label => {
+                const labelSplit: string = label.split('-')[1];
+                cosmicLabel.push(labelSplit);
+            });
+        } else if (this.props.version == 'ID') {
+            labels.map(label => {
+                const labelSplit = label.split('_');
+                cosmicLabel.push(labelSplit[3]);
+            });
+        }
+        return cosmicLabel;
+    }
+
+    @computed get formatTooltipLabelCosmicStyle(): string[] {
+        const labels: string[] = this.getLabels(this.props.data);
+        const cosmicTooltip: string[] = [];
+        if (this.props.version == 'SBS') {
+            labels.map(label => {
+                const labelSplit = label
+                    .split('_')
+                    .map((x, i) => {
+                        return i == 1 ? '[' + x.replace('-', '->') + ']' : x;
+                    })
+                    .join('');
+                cosmicTooltip.push(labelSplit);
+            });
+        } else if (this.props.version == 'DBS') {
+            labels.map(label => {
+                const labelSplit: string = label.replace('-', '->');
+                cosmicTooltip.push(labelSplit);
+            });
+        } else {
+            labels.map(label => {
+                cosmicTooltip.push(label);
+            });
+        }
+        return cosmicTooltip;
+    }
+
+    @computed get getReferenceSignatureToPlot() {
+        const currentSignature: string =
+            typeof this.props.signature !== 'undefined'
+                ? this.props.signature.split(' ')[0]
+                : this.props.initialReference.split(' ')[0];
+        const referenceSignatureToPlot: FrequencyData[] =
+            cosmicReferenceData['v3.3']['GRCh37'][this.props.version][
+                currentSignature
+            ];
+        const referenceData: DataToPlot[] = referenceSignatureToPlot.map(
+            (sig: FrequencyData) => {
+                return {
+                    mutationalSignatureLabel: sig.channel,
+                    value: -1 * (sig.frequency * 100),
+                };
+            }
+        );
+        const referenceSorted = this.getSortedReferenceSignatures(
+            referenceData
+        );
+        return addColorsForReferenceData(referenceSorted);
+    }
+
+    @computed get yAxisDomainReference(): number[] {
+        const currentSignature: string =
+            typeof this.props.signature !== 'undefined'
+                ? this.props.signature.split(' ')[0]
+                : this.props.initialReference.split(' ')[0];
+        const currentReferenceData: FrequencyData[] =
+            cosmicReferenceData['v3.3']['GRCh37'][this.props.version][
+                currentSignature
+            ];
+        const maxValue = currentReferenceData.reduce(
+            (previous: FrequencyData, current: FrequencyData) => {
+                return current.frequency > previous.frequency
+                    ? current
+                    : previous;
+            }
+        );
+        const minValue = currentReferenceData.reduce(
+            (previous: FrequencyData, current: FrequencyData) => {
+                return current.frequency < previous.frequency
+                    ? current
+                    : previous;
+            }
+        );
+        return [
+            maxValue.frequency * 100,
+            (minValue.frequency + 0.1 * minValue.frequency) * 100,
+        ];
+    }
+
+    @action getLabels(data: IMutationalCounts[]): string[] {
         return getColorsForSignatures(data).map(item => item.label);
+    }
+
+    @action getSortedReferenceSignatures(referenceData: any) {
+        const labelsOrder = getColorsForSignatures(this.props.data).map(
+            item => item.label
+        );
+        const referenceOrder = referenceData.map(
+            (itemReference: any) => itemReference.mutationalSignatureLabel
+        );
+        if (_.isEqual(labelsOrder, referenceOrder)) {
+            return referenceData;
+        } else {
+            const sorted = referenceData.sort(
+                (a: DataToPlot, b: DataToPlot) => {
+                    return (
+                        labelsOrder.findIndex(
+                            p => p === a.mutationalSignatureLabel
+                        ) -
+                        labelsOrder.findIndex(
+                            p => p === b.mutationalSignatureLabel
+                        )
+                    );
+                }
+            );
+            return sorted;
+        }
+    }
+
+    @computed get referenceAxisLabel() {
+        const percentageString = 'Percentage ';
+        return this.props.version === 'SBS'
+            ? percentageString + 'of SBS' + '\n' + this.props.signature
+            : this.props.version === 'DBS'
+            ? percentageString + 'of DBS' + '\n' + this.props.signature
+            : percentageString + 'of InDels' + '\n' + this.props.signature;
+    }
+
+    @action getTranslateDistance(defaultValue: number): number {
+        return this.props.version == 'SBS'
+            ? defaultValue + 0
+            : this.props.version == 'DBS'
+            ? defaultValue - 15
+            : defaultValue - 25;
     }
 
     public render() {
         return (
-            <div style={{ paddingTop: '10' }}>
+            <div style={{ paddingTop: '10', paddingLeft: '50' }}>
                 <svg
-                    height={400}
+                    height={600}
                     width={WindowStore.size.width - 50}
+                    style={{ paddingLeft: '30', paddingTop: 20 }}
                     xmlns="http://www.w3.org/2000/svg"
                     ref={this.props.svgRef}
                 >
                     {this.formatLegendTopAxisPoints}
                     {this.formatColorBoxLegend}
                     {this.props.version == 'ID' && this.getSubLabelsLegend}
-                    <g width={800}>
-                        <VictoryChart
-                            domainPadding={5}
-                            standalone={false}
-                            width={WindowStore.size.width - 50}
+                    <g transform={'translate(10,0)'}>
+                        <VictoryAxis
+                            dependentAxis
+                            label={this.props.label}
+                            domain={this.yAxisDomain}
                             height={300}
-                        >
-                            <VictoryAxis
-                                dependentAxis
-                                label={this.props.label}
-                                heigth={this.props.height}
-                                domain={this.yAxisDomain}
-                                style={{
-                                    axis: { strokeWidth: 1 },
-                                    axisLabel: {
-                                        fontSize: '13px',
-                                        padding:
-                                            this.props.label ==
-                                            'Mutational count (value)'
-                                                ? 40
-                                                : 35,
-                                        letterSpacing: 'normal',
-                                        fontFamily: 'Arial, Helvetica',
-                                    },
-                                    ticks: { size: 5, stroke: 'black' },
-                                    tickLabels: {
-                                        fontSize: '12px',
-                                        padding: 2,
-                                    },
-                                    grid: {
-                                        stroke: 'lightgrey',
-                                        strokeWidth: 0.3,
-                                        strokeDasharray: 10,
-                                    },
-                                }}
-                                standalone={false}
-                            />
-                            <VictoryBar
-                                barRatio={1.5}
-                                barWidth={3}
-                                width={this.props.width}
-                                labels={this.getLabelsForTooltip(
-                                    this.props.data
-                                )}
-                                labelComponent={
-                                    <VictoryTooltip
-                                        style={{ fontSize: '8px' }}
-                                        cornerRadius={3}
-                                        pointerLength={0}
-                                        flyoutStyle={{
-                                            stroke: '#bacdd8',
-                                            strokeWidth: 1,
-                                            fill: 'white',
-                                        }}
-                                    />
-                                }
-                                data={getColorsForSignatures(this.props.data)}
-                                x="label"
-                                y="value"
-                                style={{
-                                    data: {
-                                        fill: (d: IColorDataBar) =>
-                                            d.colorValue,
-                                    },
-                                }}
-                                alignment="start"
-                                standalone={false}
-                            />
-                            <VictoryAxis
-                                tickValues={this.xTickLabels}
-                                width={this.props.width}
-                                style={{
-                                    axisLabel: {
-                                        fontSize: '10px',
-                                        padding: 20,
-                                    },
-                                    tickLabels: {
-                                        fontSize: '11',
-                                        padding:
-                                            this.xTickLabels[0].length > 6
-                                                ? 55
-                                                : 40,
-                                        angle: 270,
-                                        textAnchor: 'start',
-                                        verticalAnchor: 'middle',
-                                    },
-                                    axis: { strokeWidth: 1 },
-                                    grid: { stroke: 0 },
-                                }}
-                                standalone={false}
-                            />
-                        </VictoryChart>
+                            width={WindowStore.size.width - 100}
+                            offsetX={45}
+                            style={{
+                                axis: { strokeWidth: 1 },
+                                axisLabel: {
+                                    padding:
+                                        this.props.label ==
+                                        'Mutational count (value)'
+                                            ? 35
+                                            : 30,
+                                    letterSpacing: 'normal',
+                                    fontFamily: 'Arial, Helvetica',
+                                },
+                                ticks: { size: 5, stroke: 'black' },
+                                tickLabels: {
+                                    padding: 2,
+                                },
+                                grid: {
+                                    stroke: 'lightgrey',
+                                    strokeWidth: 0.3,
+                                    strokeDasharray: 10,
+                                },
+                            }}
+                            standalone={false}
+                        />
+                    </g>
+                    <g
+                        transform={
+                            'translate(10,' +
+                            this.getTranslateDistance(250) +
+                            ')'
+                        }
+                    >
+                        <VictoryAxis
+                            dependentAxis
+                            orientation="left"
+                            invertAxis
+                            label={this.referenceAxisLabel}
+                            domain={this.yAxisDomainReference}
+                            offsetX={45}
+                            height={300}
+                            width={WindowStore.size.width - 100}
+                            style={{
+                                axis: { strokeWidth: 1 },
+                                axisLabel: {
+                                    padding:
+                                        this.props.label ==
+                                        'Mutational count (value)'
+                                            ? 25
+                                            : 25,
+                                    letterSpacing: 'normal',
+                                },
+                                ticks: { size: 5, stroke: 'black' },
+                                tickLabels: {
+                                    padding: 2,
+                                },
+                                grid: {
+                                    stroke: 'lightgrey',
+                                    strokeWidth: 0.3,
+                                    strokeDasharray: 10,
+                                },
+                            }}
+                            standalone={false}
+                        />
+                    </g>
+                    <g
+                        transform={
+                            'translate(10,' + this.getTranslateDistance(0) + ')'
+                        }
+                    >
+                        <VictoryAxis
+                            tickValues={this.formatLabelsCosmicStyle}
+                            width={WindowStore.size.width - 100}
+                            style={{
+                                axisLabel: {
+                                    fontSize: '8px',
+                                    padding: 20,
+                                },
+                                tickLabels: {
+                                    fontSize: '12px',
+                                    padding: 40,
+                                    angle: this.props.version == 'ID' ? 0 : 270,
+                                    textAnchor:
+                                        this.props.version == 'ID'
+                                            ? 'middle'
+                                            : 'start',
+                                    verticalAnchor: 'middle',
+                                },
+                                axis: { strokeWidth: 0 },
+                                grid: { stroke: 0 },
+                            }}
+                            standalone={false}
+                        />
+                    </g>
+                    <g transform={'translate(10,0)'}>
+                        <VictoryBar
+                            barRatio={1}
+                            barWidth={8}
+                            width={WindowStore.size.width - 100}
+                            height={300}
+                            labels={this.formatLabelsCosmicStyle}
+                            labelComponent={
+                                <VictoryTooltip
+                                    style={{ fontSize: '8px' }}
+                                    cornerRadius={3}
+                                    pointerLength={0}
+                                    flyoutStyle={{
+                                        stroke: '#bacdd8',
+                                        strokeWidth: 1,
+                                        fill: 'white',
+                                    }}
+                                />
+                            }
+                            alignment="middle"
+                            data={getColorsForSignatures(this.props.data)}
+                            x="label"
+                            y="value"
+                            style={{
+                                data: {
+                                    fill: (d: IColorDataBar) => d.colorValue,
+                                },
+                            }}
+                            standalone={false}
+                        />
+                    </g>
+                    <g
+                        transform={
+                            'translate(10,' +
+                            this.getTranslateDistance(250) +
+                            ')'
+                        }
+                    >
+                        <VictoryBar
+                            barRatio={1}
+                            barWidth={8}
+                            width={WindowStore.size.width - 100}
+                            height={300}
+                            data={this.getReferenceSignatureToPlot}
+                            x="label"
+                            y="value"
+                            style={{
+                                data: {
+                                    fill: (d: IColorDataBar) => d.colorValue,
+                                },
+                            }}
+                            alignment="middle"
+                            labels={this.formatLabelsCosmicStyle}
+                            labelComponent={
+                                <VictoryTooltip
+                                    style={{ fontSize: '8px' }}
+                                    cornerRadius={3}
+                                    pointerLength={0}
+                                    flyoutStyle={{
+                                        stroke: '#bacdd8',
+                                        strokeWidth: 1,
+                                        fill: 'white',
+                                    }}
+                                />
+                            }
+                            standalone={false}
+                        />
                     </g>
                 </svg>
             </div>

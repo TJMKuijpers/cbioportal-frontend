@@ -1,6 +1,10 @@
 import _ from 'lodash';
-import { IMutationalCounts } from 'shared/model/MutationalSignature';
+import {
+    IMutationalCounts,
+    IMutationalSignature,
+} from 'shared/model/MutationalSignature';
 import { scalePoint, scaleBand } from 'd3-scale';
+import { IMutationalSignatureRow } from 'pages/patientView/clinicalInformation/ClinicalInformationMutationalSignatureTable';
 export interface IColorLegend extends IColorDataBar {
     group: string;
     subcategory?: string;
@@ -44,6 +48,8 @@ export interface LegendEntriesType {
     label: string;
     value: string;
 }
+
+export type DataToPlot = { mutationalSignatureLabel: string; value: number };
 
 export const colorMap: ColorMapProps[] = [
     {
@@ -174,7 +180,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '3_Del_M',
         category: 'Microhomology',
         subcategory: '3',
-        color: '#9b59b6',
+        color: '#E194EB',
     },
     {
         name: '4:Del:R',
@@ -188,21 +194,21 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '4_Del_M',
         category: 'Microhomology',
         subcategory: '4',
-        color: '#7d3c98',
+        color: '#DD75EA',
     },
     {
         name: '5:Del:R',
         alternativeName: '5_Del_R',
         category: '>1bp deletion',
         subcategory: '5',
-        color: '#cb4335',
+        color: '#F7406C',
     },
     {
         name: '5:Del:M',
         alternativeName: '5_Del_M',
         category: 'Microhomology',
         subcategory: '5',
-        color: '#4a235a',
+        color: '#DB3AEE',
     },
     {
         name: '1:Ins:T',
@@ -272,7 +278,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '5_Ins_R',
         category: '>1bp insertion',
         subcategory: '5',
-        color: '#2874a6',
+        color: '#368BFD',
     },
 ];
 export function getColorsForSignatures(
@@ -343,7 +349,7 @@ export function getPercentageOfMutationalCount(
             mutationalSignatureLabel: item.mutationalSignatureLabel,
             mutationalSignatureClass: item.mutationalSignatureClass,
             version: item.version,
-            value: count,
+            value: sumValue == 0 ? 0 : count,
         };
     });
 }
@@ -367,6 +373,35 @@ export function getLegendEntriesBarChart(
         value: item.label,
         subcategory: item.subcategory,
     }));
+}
+
+export function addColorsForReferenceData(dataset: DataToPlot[]) {
+    const colors = dataset.map((entry: DataToPlot) => {
+        const colorIdentity = colorMap.filter(cmap => {
+            if (
+                entry.mutationalSignatureLabel.indexOf('_') == -1 &&
+                entry.mutationalSignatureLabel.indexOf('-') == -1
+            ) {
+                if (entry.mutationalSignatureLabel.match(cmap.name) != null) {
+                    return cmap.color;
+                }
+            } else {
+                if (
+                    entry.mutationalSignatureLabel.match(
+                        cmap.alternativeName
+                    ) != null
+                ) {
+                    return cmap.color;
+                }
+            }
+        });
+        const colorValue =
+            colorIdentity.length > 0
+                ? colorIdentity[colorIdentity.length - 1].color
+                : '#EE4B2B';
+        return { ...entry, colorValue };
+    });
+    return colors;
 }
 
 export function getCenterPositionLabelEntries(
@@ -430,4 +465,70 @@ export function formatLegendObjectsForRectangles(
         }));
         return formatLegendRect;
     }
+}
+
+export function prepareMutationalSignatureDataForTable(
+    mutationalSignatureData: IMutationalSignature[],
+    samplesInData: string[]
+): IMutationalSignatureRow[] {
+    const tableData: IMutationalSignatureRow[] = [];
+    const sampleInvertedDataByMutationalSignature: Array<any> = _(
+        mutationalSignatureData
+    )
+        .groupBy(
+            mutationalSignatureSample => mutationalSignatureSample.meta.name
+        )
+        .map((mutationalSignatureSampleData, name) => ({
+            name,
+            samples: mutationalSignatureSampleData,
+            url: mutationalSignatureSampleData[0].meta.url,
+        }))
+        .value();
+    for (const mutationalSignature of sampleInvertedDataByMutationalSignature) {
+        let mutationalSignatureRowForTable: IMutationalSignatureRow = {
+            name: '',
+            sampleValues: {},
+            url: '',
+        };
+
+        mutationalSignatureRowForTable.name = mutationalSignature.name;
+        mutationalSignatureRowForTable.url = mutationalSignature.url;
+        if (
+            Object.keys(mutationalSignature.samples).length ===
+            samplesInData.length
+        ) {
+            for (const sample of mutationalSignature.samples) {
+                mutationalSignatureRowForTable.sampleValues[sample.sampleId] = {
+                    value: sample.value,
+                    confidence: sample.confidence,
+                };
+            }
+            tableData.push(mutationalSignatureRowForTable);
+        } else {
+            for (const sampleId of samplesInData) {
+                if (
+                    mutationalSignature.samples.some(
+                        (obj: IMutationalSignature) => obj.sampleId === sampleId
+                    )
+                ) {
+                    // Sample exists and we can use the values
+                    for (const sample of mutationalSignature.samples) {
+                        mutationalSignatureRowForTable.sampleValues[
+                            sample.sampleId
+                        ] = {
+                            value: sample.value,
+                            confidence: sample.confidence,
+                        };
+                    }
+                } else {
+                    mutationalSignatureRowForTable.sampleValues[sampleId] = {
+                        value: 0,
+                        confidence: 1,
+                    };
+                }
+            }
+            tableData.push(mutationalSignatureRowForTable);
+        }
+    }
+    return tableData;
 }
