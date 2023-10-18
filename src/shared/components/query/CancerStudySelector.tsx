@@ -19,7 +19,7 @@ import memoize from 'memoize-weak-decorator';
 import { If, Then, Else } from 'react-if';
 import { QueryStore } from './QueryStore';
 import SectionHeader from '../sectionHeader/SectionHeader';
-import { Modal } from 'react-bootstrap';
+import { Button, Dropdown, Modal } from 'react-bootstrap';
 import { getServerConfig } from 'config/config';
 import { ServerConfigHelpers } from '../../../config/config';
 import { PAN_CAN_SIGNATURE } from './StudyListLogic';
@@ -27,6 +27,8 @@ import QuickSelectButtons from './QuickSelectButtons';
 import { StudySelectorStats } from 'shared/components/query/StudySelectorStats';
 import WindowStore from 'shared/components/window/WindowStore';
 import { StudySearch } from 'shared/components/query/StudySearch';
+import Select from 'react-select';
+import { DataTypeFilter } from 'shared/components/query/DataTypeFilter';
 
 const MIN_LIST_HEIGHT = 200;
 
@@ -197,6 +199,63 @@ export default class CancerStudySelector extends React.Component<
             getServerConfig().skin_quick_select_buttons
         );
 
+        const StudyFilterOptionsFormatted = [
+            {
+                id: 'sequencedSampleCount',
+                name: 'Mutations',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'cnaSampleCount',
+                name: 'CNA',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'mrnaRnaSeqV2SampleCount',
+                name: 'RNA-Seq',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'mrnaMicroarraySampleCount',
+                name: 'RNA (microarray)',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'miRnaSampleCount',
+                name: 'miRNA',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'methylationHm27SampleCount',
+                name: 'Methylation (HM27)',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'rppaSampleCount',
+                name: 'RPPA',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'massSpectrometrySampleCount',
+                name: 'Protein Mass-Spectrometry',
+                checked: false,
+                togglable: true,
+            },
+            {
+                id: 'treatmentCount',
+                name: 'Treatment',
+                checked: false,
+                togglable: true,
+            },
+        ];
+
         return (
             <FlexCol
                 overflow
@@ -237,22 +296,40 @@ export default class CancerStudySelector extends React.Component<
                             let searchTimeout: number | null = null;
 
                             return (
-                                <div
-                                    data-tour="cancer-study-search-box"
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    {this.store.queryParser && (
-                                        <StudySearch
-                                            parser={this.store.queryParser}
-                                            query={this.store.searchClauses}
-                                            onSearch={query =>
-                                                (this.store.searchClauses = query)
+                                <div>
+                                    <div
+                                        data-tour="data-type-filter"
+                                        style={{
+                                            display: 'inline-block',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <DataTypeFilter
+                                            isChecked={false}
+                                            checkedOptions={[]}
+                                            buttonText={'Data type filter'}
+                                            dataFilterActive={
+                                                StudyFilterOptionsFormatted
                                             }
                                         />
-                                    )}
+                                    </div>
+                                    <div
+                                        data-tour="cancer-study-search-box"
+                                        style={{
+                                            display: 'inline-block',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        {this.store.queryParser && (
+                                            <StudySearch
+                                                parser={this.store.queryParser}
+                                                query={this.store.searchClauses}
+                                                onSearch={query =>
+                                                    (this.store.searchClauses = query)
+                                                }
+                                            />
+                                        )}
+                                    </div>
                                 </div>
                             );
                         }}
