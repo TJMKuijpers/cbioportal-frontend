@@ -1,6 +1,12 @@
 import * as React from 'react';
 import { FunctionComponent, useCallback } from 'react';
-import { SearchClause } from 'shared/components/query/filteredSearch/SearchClause';
+import {
+    AndSearchClause,
+    FILTER_VALUE_SEPARATOR,
+    NotSearchClause,
+    QueryUpdate,
+    SearchClause,
+} from 'shared/components/query/filteredSearch/SearchClause';
 import { QueryParser } from 'shared/lib/query/QueryParser';
 import _ from 'lodash';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -13,33 +19,23 @@ export interface IFilterDef {
     id: string;
     name: string;
     checked: boolean;
-    togglable?: boolean;
 }
 
-export type DataTypeFilterProps = {
+export type IDataTypeFilterProps = {
     isChecked: boolean;
-    checkedOptions: string[];
     buttonText: string | JSX.Element;
     dataFilterActive?: IFilterDef[];
-    onColumnToggled?: (
-        columnId: string,
-        dataFilterActive?: IFilterDef[]
-    ) => void;
-    resetColumnVisibility?: () => void;
-    showResetColumnsButton?: boolean;
 };
 
-export class DataTypeFilter extends React.Component<DataTypeFilterProps, {}> {
-    constructor(props: DataTypeFilterProps) {
+export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
+    constructor(props: IDataTypeFilterProps) {
         super(props);
-        this.handleDataTypeSelect = this.handleDataTypeSelect.bind(this);
+        this.isDataTypeChecked = this.isDataTypeChecked.bind(this);
     }
-
     public render() {
-        return this.dataTypeFilterMenu;
+        return this.dataTypeFilterIcons;
     }
-
-    private get dataTypeFilterMenu() {
+    private get dataTypeFilterIcons() {
         return (
             <div data-test="data-type-filter" style={{ paddingRight: 10 }}>
                 <div className="input-group input-group-sm input-group-toggle">
@@ -63,41 +59,25 @@ export class DataTypeFilter extends React.Component<DataTypeFilterProps, {}> {
                                 maxHeight: 300,
                                 whiteSpace: 'nowrap',
                                 paddingRight: 10,
-                                background: 'white',
                                 width: 'auto',
                             }}
                         >
-                            <ul
-                                className="list-unstyled"
-                                style={{ padding: '5', marginLeft: '10' }}
-                            >
-                                <h5>Data type filters</h5>
-                                {this.props.dataFilterActive &&
-                                    _.map(
-                                        this.props.dataFilterActive,
-                                        (visibility: IFilterDef) => {
-                                            return visibility.togglable ? (
-                                                <li>
-                                                    <Checkbox
-                                                        data-id={visibility.id}
-                                                        onChange={
-                                                            this
-                                                                .handleDataTypeSelect as React.FormEventHandler<
-                                                                any
-                                                            >
-                                                        }
-                                                        checked={
-                                                            visibility.checked
-                                                        }
-                                                        inline
-                                                    >
-                                                        {visibility.name}
-                                                    </Checkbox>
-                                                </li>
-                                            ) : null;
-                                        }
-                                    )}
-                            </ul>
+                            {this.props.dataFilterActive!.map(type => {
+                                console.log(this.props.dataFilterActive);
+                                return (
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            style={{ marginRight: 2 }}
+                                            onClick={() =>
+                                                console.log('clicked')
+                                            }
+                                        />
+                                        {}
+                                        <span>{type.name}</span>
+                                    </label>
+                                );
+                            })}
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
@@ -105,11 +85,79 @@ export class DataTypeFilter extends React.Component<DataTypeFilterProps, {}> {
         );
     }
 
-    private handleDataTypeSelect(evt: React.FormEvent<HTMLInputElement>) {
+    private isDataTypeChecked(evt: React.FormEvent<HTMLInputElement>) {
         const id = evt.currentTarget.getAttribute('data-id');
-        // should update the search clausule (to make it compatible with the search field changes)
-        if (this.props.onColumnToggled && id) {
-            this.props.onColumnToggled(id, this.props.dataFilterActive);
-        }
+        console.log(id);
+        this.props.dataFilterActive!.map(x => {
+            console.log(x.id === id);
+            x.id == id ? (x.checked = true) : (x.checked = false);
+        });
+        console.log(this.props.dataFilterActive);
     }
 }
+
+/*export function createDataTypeUpdate(
+
+): QueryUpdate {
+    console.log(phrasesToRemove)
+    console.log(optionsToAdd)
+    console.log(filter)
+    let toAdd: SearchClause[];
+    const toRemove = phrasesToRemove;
+    const options = filter.form.options;
+    const prefix = filter.phrasePrefix || '';
+    const fields = filter.nodeFields;
+
+    const onlyAnd = optionsToAdd.length === options.length;
+    const onlyNot = !optionsToAdd.length;
+    const moreAnd = optionsToAdd.length > options.length / 2;
+    if (onlyAnd) {
+        toAdd = [];
+    } else if (onlyNot || moreAnd) {
+        if (filter.phrasePrefix != 'data-type-study') {
+            const phrase = options
+                .filter(o => !optionsToAdd.includes(o))
+                .join(FILTER_VALUE_SEPARATOR);
+
+            toAdd = [
+                new NotSearchClause(createListPhrase(prefix, phrase, fields)),
+            ];
+        } else {
+            const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
+            if (phrase !== '') {
+                toAdd = [
+                    new AndSearchClause([
+                        createListPhrase(prefix, phrase, fields),
+                    ]),
+                ];
+            } else {
+                toAdd = [];
+            }
+        }
+    } else {
+        const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
+        toAdd = [
+            new AndSearchClause([createListPhrase(prefix, phrase, fields)]),
+        ];
+    }
+    return { toAdd, toRemove };
+}*/
+
+export type DataTypeUpdate = {
+    toAdd: string[];
+    toRemove: string[];
+};
+
+/*
+<li key={type.id}>
+                                        <Checkbox
+                                            data-id={type.id}
+                                            onClick={()=>{
+                                                type.checked=!type.checked
+                                            }}
+                                            checked={type.checked}
+                                            inline
+                                        >
+                                            {type.name}
+                                        </Checkbox>*!/
+</li>*/

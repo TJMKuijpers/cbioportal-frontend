@@ -39,6 +39,54 @@ export interface ICancerStudySelectorProps {
     aboveStudyListBlurb?: JSX.Element;
 }
 
+const StudyFilterOptionsFormatted = [
+    {
+        id: 'sequencedSampleCount',
+        name: 'Mutations',
+        checked: false,
+    },
+    {
+        id: 'cnaSampleCount',
+        name: 'CNA',
+        checked: false,
+    },
+    {
+        id: 'mrnaRnaSeqV2SampleCount',
+        name: 'RNA-Seq',
+        checked: false,
+    },
+    {
+        id: 'mrnaMicroarraySampleCount',
+        name: 'RNA (microarray)',
+        checked: false,
+    },
+    {
+        id: 'miRnaSampleCount',
+        name: 'miRNA',
+        checked: false,
+    },
+    {
+        id: 'methylationHm27SampleCount',
+        name: 'Methylation (HM27)',
+        checked: false,
+    },
+    {
+        id: 'rppaSampleCount',
+        name: 'RPPA',
+        checked: false,
+    },
+    {
+        id: 'massSpectrometrySampleCount',
+        name: 'Protein Mass-Spectrometry',
+        checked: false,
+    },
+    {
+        id: 'treatmentCount',
+        name: 'Treatment',
+        checked: false,
+    },
+];
+
 @observer
 export default class CancerStudySelector extends React.Component<
     ICancerStudySelectorProps,
@@ -199,63 +247,6 @@ export default class CancerStudySelector extends React.Component<
             getServerConfig().skin_quick_select_buttons
         );
 
-        const StudyFilterOptionsFormatted = [
-            {
-                id: 'sequencedSampleCount',
-                name: 'Mutations',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'cnaSampleCount',
-                name: 'CNA',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'mrnaRnaSeqV2SampleCount',
-                name: 'RNA-Seq',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'mrnaMicroarraySampleCount',
-                name: 'RNA (microarray)',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'miRnaSampleCount',
-                name: 'miRNA',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'methylationHm27SampleCount',
-                name: 'Methylation (HM27)',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'rppaSampleCount',
-                name: 'RPPA',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'massSpectrometrySampleCount',
-                name: 'Protein Mass-Spectrometry',
-                checked: false,
-                togglable: true,
-            },
-            {
-                id: 'treatmentCount',
-                name: 'Treatment',
-                checked: false,
-                togglable: true,
-            },
-        ];
-
         return (
             <FlexCol
                 overflow
@@ -306,7 +297,6 @@ export default class CancerStudySelector extends React.Component<
                                     >
                                         <DataTypeFilter
                                             isChecked={false}
-                                            checkedOptions={[]}
                                             buttonText={'Data type filter'}
                                             dataFilterActive={
                                                 StudyFilterOptionsFormatted
