@@ -69,9 +69,14 @@ export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
                                         <input
                                             type="checkbox"
                                             style={{ marginRight: 2 }}
-                                            onClick={() =>
-                                                console.log('clicked')
-                                            }
+                                            onClick={() => {
+                                                type.checked = !type.checked;
+                                                createDataTypeUpdate(
+                                                    type.id,
+                                                    type,
+                                                    this.props.dataFilterActive!
+                                                );
+                                            }}
                                         />
                                         {}
                                         <span>{type.name}</span>
@@ -96,13 +101,27 @@ export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
     }
 }
 
-/*export function createDataTypeUpdate(
+export function createDataTypeUpdate(
+    dataType: string,
+    type: IFilterDef,
+    allFilters: IFilterDef[]
+): void {
+    const toAdd: string[] = [];
+    allFilters.map((subDataFilter: IFilterDef) =>
+        subDataFilter.checked ? toAdd.push(subDataFilter.id) : ''
+    );
+    console.log(
+        toAdd
+    ); /*else {
+        const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
+        toAdd = [
+            new AndSearchClause([createListPhrase(prefix, phrase, fields)]),
+        ];
+    }
+    return { toAdd, toRemove };*/
 
-): QueryUpdate {
-    console.log(phrasesToRemove)
-    console.log(optionsToAdd)
-    console.log(filter)
-    let toAdd: SearchClause[];
+    // create a filter that is just same as search box and reference genome
+    /*let toAdd: SearchClause[];
     const toRemove = phrasesToRemove;
     const options = filter.form.options;
     const prefix = filter.phrasePrefix || '';
@@ -134,30 +153,5 @@ export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
                 toAdd = [];
             }
         }
-    } else {
-        const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
-        toAdd = [
-            new AndSearchClause([createListPhrase(prefix, phrase, fields)]),
-        ];
-    }
-    return { toAdd, toRemove };
-}*/
-
-export type DataTypeUpdate = {
-    toAdd: string[];
-    toRemove: string[];
-};
-
-/*
-<li key={type.id}>
-                                        <Checkbox
-                                            data-id={type.id}
-                                            onClick={()=>{
-                                                type.checked=!type.checked
-                                            }}
-                                            checked={type.checked}
-                                            inline
-                                        >
-                                            {type.name}
-                                        </Checkbox>*!/
-</li>*/
+    }*/
+}
