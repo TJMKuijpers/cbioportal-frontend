@@ -14,6 +14,10 @@ import { Checkbox, Dropdown } from 'react-bootstrap';
 import { DropdownToggleProps } from 'react-bootstrap/lib/DropdownToggle';
 
 import { DropdownMenuProps } from 'react-bootstrap/lib/DropdownMenu';
+import {
+    createListPhrase,
+    FullTextSearchFields,
+} from 'shared/lib/query/textQueryUtils';
 
 export interface IFilterDef {
     id: string;
@@ -22,6 +26,9 @@ export interface IFilterDef {
 }
 
 export type IDataTypeFilterProps = {
+    parser: QueryParser;
+    query: SearchClause[];
+    dataFilter: string[];
     isChecked: boolean;
     buttonText: string | JSX.Element;
     dataFilterActive?: IFilterDef[];
@@ -30,7 +37,6 @@ export type IDataTypeFilterProps = {
 export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
     constructor(props: IDataTypeFilterProps) {
         super(props);
-        this.isDataTypeChecked = this.isDataTypeChecked.bind(this);
     }
     public render() {
         return this.dataTypeFilterIcons;
@@ -63,7 +69,6 @@ export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
                             }}
                         >
                             {this.props.dataFilterActive!.map(type => {
-                                console.log(this.props.dataFilterActive);
                                 return (
                                     <label>
                                         <input
@@ -89,30 +94,29 @@ export class DataTypeFilter extends React.Component<IDataTypeFilterProps, {}> {
             </div>
         );
     }
-
-    private isDataTypeChecked(evt: React.FormEvent<HTMLInputElement>) {
-        const id = evt.currentTarget.getAttribute('data-id');
-        console.log(id);
-        this.props.dataFilterActive!.map(x => {
-            console.log(x.id === id);
-            x.id == id ? (x.checked = true) : (x.checked = false);
-        });
-        console.log(this.props.dataFilterActive);
-    }
 }
 
 export function createDataTypeUpdate(
     dataType: string,
     type: IFilterDef,
     allFilters: IFilterDef[]
-): void {
+): string[] {
     const toAdd: string[] = [];
     allFilters.map((subDataFilter: IFilterDef) =>
         subDataFilter.checked ? toAdd.push(subDataFilter.id) : ''
     );
-    console.log(
-        toAdd
-    ); /*else {
+    console.log('clicked');
+    console.log(allFilters);
+    console.log(toAdd);
+    return toAdd;
+    // toAdd contains the string[] argument for createListPhrase
+    // phrase is always empy because we don't care about the search field
+
+    // Add a AndSearchClause
+    /*    const test = [new AndSearchClause([createListPhrase(toAdd[0], phrase[0], fields)])]
+    console.log(test)*/
+
+    /*else {
         const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
         toAdd = [
             new AndSearchClause([createListPhrase(prefix, phrase, fields)]),

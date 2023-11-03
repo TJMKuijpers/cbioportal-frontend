@@ -45,7 +45,6 @@ export default class StudyListLogic {
     @cached @computed get map_node_filterBySearchText() {
         // first compute individual node match results
         let map_node_searchResult = new Map<CancerTreeNode, SearchResult>();
-
         for (const [
             study,
             meta,
@@ -59,11 +58,9 @@ export default class StudyListLogic {
                 )
             );
         }
-
         let map_node_filter = new Map<CancerTreeNode, boolean>();
         for (let [node, meta] of this.store.treeData.map_node_meta.entries()) {
             if (map_node_filter.has(node)) continue;
-
             let filter = false;
             for (let item of [
                 node,
@@ -88,7 +85,34 @@ export default class StudyListLogic {
                     for (let cancerType of cancerTypes)
                         map_node_filter.set(cancerType, true);
         }
+        console.log('search filter');
+        console.log(map_node_filter);
         return map_node_filter;
+    }
+
+    @computed get map_node_filtered_by_datatype() {
+        // TODO tim
+        console.log('Mijn filter');
+        // Create a map with all the studies and set all to true (no filter applied)
+        let map_node_filter = new Map<CancerTreeNode, boolean>();
+        for (let node of this.store.treeData.map_node_meta.keys()) {
+            map_node_filter.set(node, true);
+        }
+        const dataTypeFilters = ['cnaSampleCount'];
+        let map_node_dataTypeResult = new Map<CancerTreeNode, boolean>();
+        for (let node of this.store.treeData.map_node_meta.keys()) {
+            let result = map_node_filter.get(node);
+            let studyInStore = this.store.cancerStudies.result.filter(
+                study => study.name === node.name
+            );
+            const dataTypeFilters = ['cnaSampleCount'];
+            let filterValue: boolean[] = [];
+            dataTypeFilters.map(x => filterValue.push(node[x] > 0));
+            map_node_dataTypeResult.set(node, true);
+        }
+        console.log('data filter');
+        console.log(map_node_dataTypeResult);
+        return map_node_dataTypeResult;
     }
 
     @cached @computed get map_node_filterBySelectedCancerTypes() {
@@ -144,6 +168,7 @@ export default class StudyListLogic {
             this.map_node_filterByDepth,
             this.map_node_filterBySearchText,
             this.map_node_filterBySelectedCancerTypes,
+            this.map_node_filtered_by_datatype,
         ]);
     }
 
