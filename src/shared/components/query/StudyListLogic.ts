@@ -99,10 +99,16 @@ export default class StudyListLogic {
             if (this.store.dataTypeFilters.length == 0) {
                 map_node_dataTypeResult.set(node, true);
             } else {
-                if (map_node_filter.has(node)) continue;
                 let filterValue: boolean[] = [];
                 this.store.dataTypeFilters.map((x: string) => {
-                    filterValue.push(node[x] > 0);
+                    if (x === 'mrnaRnaSeqV2SampleCount') {
+                        filterValue.push(
+                            node[x] > 0 || node['mrnaRnaSeqSampleCount']! > 0
+                        );
+                    } else {
+                        filterValue.push(node[x] > 0);
+                    }
+                    return filterValue;
                 });
                 const filterBoolean = filterValue.every(v => v === true);
                 map_node_dataTypeResult.set(node, filterBoolean);
