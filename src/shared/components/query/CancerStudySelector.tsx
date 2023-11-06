@@ -39,6 +39,10 @@ export interface ICancerStudySelectorProps {
     aboveStudyListBlurb?: JSX.Element;
 }
 
+export type FilterUpdate = {
+    dataFilter: string[];
+};
+
 const StudyFilterOptionsFormatted = [
     {
         id: 'sequencedSampleCount',
@@ -243,6 +247,7 @@ export default class CancerStudySelector extends React.Component<
             shownAndSelectedStudies,
         } = this.logic.mainView.getSelectionReport();
 
+        // TO DO shownStudies can be filtered based on the DataTypeFIlter
         const quickSetButtons = this.logic.mainView.quickSelectButtons(
             getServerConfig().skin_quick_select_buttons
         );
@@ -296,11 +301,15 @@ export default class CancerStudySelector extends React.Component<
                                         }}
                                     >
                                         <DataTypeFilter
+                                            dataFilter={
+                                                this.store.dataTypeFilters
+                                            }
                                             isChecked={false}
                                             buttonText={'Data type filter'}
                                             dataFilterActive={
                                                 StudyFilterOptionsFormatted
                                             }
+                                            store={this.store}
                                         />
                                     </div>
                                     <div

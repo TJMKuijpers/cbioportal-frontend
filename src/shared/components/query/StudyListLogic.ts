@@ -85,33 +85,42 @@ export default class StudyListLogic {
                     for (let cancerType of cancerTypes)
                         map_node_filter.set(cancerType, true);
         }
-        console.log('search filter');
-        console.log(map_node_filter);
         return map_node_filter;
     }
 
-    @computed get map_node_filtered_by_datatype() {
-        // TODO tim
-        console.log('Mijn filter');
+    @cached @computed get map_node_filtered_by_datatype() {
         // Create a map with all the studies and set all to true (no filter applied)
         let map_node_filter = new Map<CancerTreeNode, boolean>();
         for (let node of this.store.treeData.map_node_meta.keys()) {
             map_node_filter.set(node, true);
         }
-        const dataTypeFilters = ['cnaSampleCount'];
         let map_node_dataTypeResult = new Map<CancerTreeNode, boolean>();
-        for (let node of this.store.treeData.map_node_meta.keys()) {
-            let result = map_node_filter.get(node);
-            let studyInStore = this.store.cancerStudies.result.filter(
-                study => study.name === node.name
-            );
-            const dataTypeFilters = ['cnaSampleCount'];
-            let filterValue: boolean[] = [];
-            dataTypeFilters.map(x => filterValue.push(node[x] > 0));
-            map_node_dataTypeResult.set(node, true);
+        for (let [node, meta] of this.store.treeData.map_node_meta.entries()) {
+            if (this.store.dataTypeFilters.length == 0) {
+                map_node_dataTypeResult.set(node, true);
+            } else {
+                let result = map_node_filter.get(node);
+                let studyInStore = this.store.cancerStudies.result.filter(
+                    study => study.name === node.name
+                );
+                //const dataTypeFilters = ['cnaSampleCount'];
+                let filterValue: boolean[] = [];
+                this.store.dataTypeFilters.map(x => {
+                    filterValue.push(node[x] > 0);
+                });
+                const filterBoolean = filterValue.every(v => v === true);
+                map_node_dataTypeResult.set(node, filterBoolean);
+
+                // include ancestors of matching studies
+                if (filterBoolean && !meta.isCancerType)
+                    for (let cancerTypes of [
+                        meta.ancestors,
+                        meta.priorityCategories,
+                    ])
+                        for (let cancerType of cancerTypes)
+                            map_node_dataTypeResult.set(cancerType, true);
+            }
         }
-        console.log('data filter');
-        console.log(map_node_dataTypeResult);
         return map_node_dataTypeResult;
     }
 
@@ -176,6 +185,7 @@ export default class StudyListLogic {
         return new FilteredCancerTreeView(this.store, [
             this.map_node_filterByDepth,
             this.map_node_filterBySearchText,
+            this.map_node_filtered_by_datatype,
         ]);
     }
 
@@ -208,7 +218,8 @@ export default class StudyListLogic {
     isHighlighted(node: CancerTreeNode): boolean {
         return (
             !!this.store.searchText &&
-            !!this.map_node_filterBySearchText.get(node)
+            !!this.map_node_filterBySearchText.get(node) &&
+            !!this.map_node_filtered_by_datatype.get(node)
         );
     }
 }
@@ -378,7 +389,8 @@ export class FilteredCancerTreeView {
     @computed get isFiltered() {
         return (
             this.store.selectedCancerTypeIds.length > 0 ||
-            this.store.searchText.length > 0
+            this.store.searchText.length > 0 ||
+            this.store.dataTypeFilters.length > 0
         );
     }
 

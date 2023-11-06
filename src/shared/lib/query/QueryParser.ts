@@ -23,18 +23,6 @@ import {
     dataTypeFilterField,
 } from 'shared/components/query/filteredSearch/field/dataTypeFilterField';
 
-export const StudyFilterOptionsFormatted: { [key: string]: string } = {
-    sequencedSampleCount: 'Mutations',
-    cnaSampleCount: 'CNA',
-    mrnaRnaSeqV2SampleCount: 'RNA-Seq',
-    mrnaMicroarraySampleCount: 'RNA (microarray)',
-    miRnaSampleCount: 'miRNA',
-    methylationHm27SampleCount: 'Methylation (HM27)',
-    rppaSampleCount: 'RPPA',
-    massSpectrometrySampleCount: 'Protein Mass-Spectrometry',
-    treatmentCount: 'Treatment',
-};
-
 export class QueryParser {
     /**
      * Can be extended with additional search filters
@@ -68,33 +56,12 @@ export class QueryParser {
                     options: [...referenceGenomes],
                     label: 'Reference genome',
                 },
-                /**
-                 * Data type filter for studies
-                 */
-            },
-            {
-                phrasePrefix: 'data-type-study',
-                nodeFields: [...this.nodeFieldsPortalProperties],
-                form: {
-                    input: filterDataSets,
-                    options: [...this.portalPropertiesDataTypeFilters],
-                    label: 'Data type availability',
-                },
             },
         ];
     }
 
     get searchFilters(): CancerTreeSearchFilter[] {
         return this._searchFilters;
-    }
-
-    get portalPropertiesDataTypeFilters(): string[] {
-        return Object.values(StudyFilterOptionsFormatted);
-    }
-    get nodeFieldsPortalProperties(): FullTextSearchFields[] {
-        return Object.keys(
-            StudyFilterOptionsFormatted
-        ) as FullTextSearchFields[];
     }
 
     public parseSearchQuery(query: string): SearchClause[] {

@@ -9,10 +9,7 @@ import {
     SearchClause,
 } from 'shared/components/query/filteredSearch/SearchClause';
 import _ from 'lodash';
-import {
-    MatchResult,
-    StudyFilterOptionsFormatted,
-} from 'shared/lib/query/QueryParser';
+import { MatchResult } from 'shared/lib/query/QueryParser';
 import { FilterField } from 'shared/components/query/filteredSearch/field/FilterFormField';
 import {
     ListPhrase,
@@ -88,22 +85,7 @@ export function performSearchSingle(
         } else if (clause.isAnd()) {
             let allPhrasesMatch = true;
             for (const phrase of clause.getPhrases()) {
-                if (phrase.toString().split(':')[0] === 'data-type-study') {
-                    const listPhrase = phrase as ListPhrase;
-                    const keyValueList: string[] = listPhrase[
-                        '_phraseList'
-                    ].map(
-                        (x: string) =>
-                            Object.keys(StudyFilterOptionsFormatted).find(
-                                key => StudyFilterOptionsFormatted[key] === x
-                            )!
-                    );
-                    allPhrasesMatch =
-                        allPhrasesMatch &&
-                        phrase.dataCountPerDataType(study, keyValueList);
-                } else {
-                    allPhrasesMatch = allPhrasesMatch && phrase.match(study);
-                }
+                allPhrasesMatch = allPhrasesMatch && phrase.match(study);
             }
             match = match || allPhrasesMatch;
         }
@@ -146,7 +128,6 @@ export function addClauses(
             result = addNotClause(clause, result);
         }
     }
-
     return result;
 }
 
