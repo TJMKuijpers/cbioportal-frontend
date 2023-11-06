@@ -102,7 +102,7 @@ export const FilterCheckbox: FunctionComponent<FieldProps> = props => {
     }
 };
 
-export function isOptionChecked(
+function isOptionChecked(
     option: string,
     relevantClauses: SearchClause[]
 ): boolean {
@@ -151,26 +151,11 @@ export function createQueryUpdate(
     if (onlyAnd) {
         toAdd = [];
     } else if (onlyNot || moreAnd) {
-        if (filter.phrasePrefix != 'data-type-study') {
-            const phrase = options
-                .filter(o => !optionsToAdd.includes(o))
-                .join(FILTER_VALUE_SEPARATOR);
+        const phrase = options
+            .filter(o => !optionsToAdd.includes(o))
+            .join(FILTER_VALUE_SEPARATOR);
 
-            toAdd = [
-                new NotSearchClause(createListPhrase(prefix, phrase, fields)),
-            ];
-        } else {
-            const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
-            if (phrase !== '') {
-                toAdd = [
-                    new AndSearchClause([
-                        createListPhrase(prefix, phrase, fields),
-                    ]),
-                ];
-            } else {
-                toAdd = [];
-            }
-        }
+        toAdd = [new NotSearchClause(createListPhrase(prefix, phrase, fields))];
     } else {
         const phrase = optionsToAdd.join(FILTER_VALUE_SEPARATOR);
         toAdd = [

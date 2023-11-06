@@ -18,10 +18,6 @@ import {
     ListPhrase,
     Phrase,
 } from 'shared/components/query/filteredSearch/Phrase';
-import {
-    filterDataSets,
-    dataTypeFilterField,
-} from 'shared/components/query/filteredSearch/field/dataTypeFilterField';
 
 export class QueryParser {
     /**

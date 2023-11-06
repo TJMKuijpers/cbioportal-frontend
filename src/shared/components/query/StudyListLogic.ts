@@ -99,13 +99,9 @@ export default class StudyListLogic {
             if (this.store.dataTypeFilters.length == 0) {
                 map_node_dataTypeResult.set(node, true);
             } else {
-                let result = map_node_filter.get(node);
-                let studyInStore = this.store.cancerStudies.result.filter(
-                    study => study.name === node.name
-                );
-                //const dataTypeFilters = ['cnaSampleCount'];
+                if (map_node_filter.has(node)) continue;
                 let filterValue: boolean[] = [];
-                this.store.dataTypeFilters.map(x => {
+                this.store.dataTypeFilters.map((x: string) => {
                     filterValue.push(node[x] > 0);
                 });
                 const filterBoolean = filterValue.every(v => v === true);
