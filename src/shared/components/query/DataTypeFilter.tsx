@@ -22,17 +22,14 @@ export type IDataTypeFilterProps = {
 
 export const DataTypeFilter: FunctionComponent<IDataTypeFilterProps> = props => {
     return (
-        <div data-test="data-type-filter" style={{ paddingRight: 10 }}>
+        <div data-test="dropdown-data-type-filter" style={{ paddingRight: 10 }}>
             <div className="input-group input-group-sm input-group-toggle">
-                <Dropdown id="dropdown-custom-222">
+                <Dropdown id="dropdown-study-data-filter">
                     <Dropdown.Toggle
                         {...({
                             rootCloseEvent: 'click',
                         } as DropdownToggleProps)}
                         className="btn-sm"
-                        style={{
-                            backgroundColor: 'white',
-                        }}
                     >
                         {props.buttonText}
                     </Dropdown.Toggle>
@@ -49,20 +46,21 @@ export const DataTypeFilter: FunctionComponent<IDataTypeFilterProps> = props => 
                     >
                         {props.dataFilterActive!.map(type => {
                             return (
-                                <label>
+                                <label style={{ paddingTop: 5 }}>
                                     <input
                                         type="checkbox"
                                         style={{ marginRight: 2 }}
                                         onClick={() => {
                                             type.checked = !type.checked;
-                                            const update = createDataTypeUpdate(
+                                            props.store.dataTypeFilters = createDataTypeUpdate(
                                                 props.dataFilterActive!
                                             );
-                                            props.store.dataTypeFilters = update;
                                         }}
                                     />
                                     {}
-                                    <span>{type.name}</span>
+                                    <span style={{ paddingLeft: 5 }}>
+                                        {type.name}
+                                    </span>
                                 </label>
                             );
                         })}
