@@ -15,7 +15,6 @@ import { cached } from 'mobxpromise';
 import { ServerConfigHelpers } from '../../../config/config';
 import memoize from 'memoize-weak-decorator';
 import { SearchResult } from 'shared/components/query/filteredSearch/SearchClause';
-
 export const PAN_CAN_SIGNATURE = 'pan_can_atlas';
 
 export default class StudyListLogic {
@@ -99,18 +98,25 @@ export default class StudyListLogic {
             if (this.store.dataTypeFilters.length == 0) {
                 map_node_dataTypeResult.set(node, true);
             } else {
+                let nodeStudy = this.store.cancerStudies.result.filter(
+                    study => study.name === node.name
+                );
                 let filterValue: boolean[] = [];
-                this.store.dataTypeFilters.map((x: string) => {
-                    if (x === 'mrnaRnaSeqV2SampleCount') {
-                        filterValue.push(
-                            node[x] > 0 || node['mrnaRnaSeqSampleCount']! > 0
-                        );
-                    } else {
-                        filterValue.push(node[x] > 0);
+                const keys = Object.keys(node) as (keyof typeof node)[];
+                const filterToApply = this.store.dataTypeFilters;
+                for (const filter in filterToApply) {
+                    for (const x in keys) {
+                        if (keys[x] === filterToApply[filter]) {
+                            Object.values(node)[x]! > 0
+                                ? filterValue.push(true)
+                                : filterValue.push(false);
+                        }
                     }
-                    return filterValue;
-                });
-                const filterBoolean = filterValue.every(v => v === true);
+                }
+                const filterBoolean =
+                    filterValue.length == 0
+                        ? false
+                        : filterValue.every(v => v === true);
                 map_node_dataTypeResult.set(node, filterBoolean);
 
                 // include ancestors of matching studies

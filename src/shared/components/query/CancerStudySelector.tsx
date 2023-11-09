@@ -295,6 +295,7 @@ export default class CancerStudySelector extends React.Component<
                                 <div>
                                     <div
                                         data-tour="data-type-filter"
+                                        data-test="data-type-filter-test"
                                         style={{
                                             display: 'inline-block',
                                             alignItems: 'center',

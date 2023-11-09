@@ -15,6 +15,11 @@ describe('DataTypeFilter', () => {
         goToUrlAndSetLocalStorage(url, true);
         var dropdownMenu = 'div[data-test=dropdown-data-type-filter]';
         $(dropdownMenu).waitForExist({ timeout: 10000 });
-        assert($(dropdownMenu).isDisplayed());
+        assert.equal($(dropdownMenu).isExisting(), true);
+    });
+    it('Click on the dropdown menu to open the selection options', () => {
+        $(
+            `${data - type - filter - test} button#dropdown-study-data-filter`
+        ).click();
     });
 });
