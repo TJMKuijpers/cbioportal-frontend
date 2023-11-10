@@ -212,6 +212,44 @@ export default class CancerStudySelector extends React.Component<
         }
     }
 
+    @computed get showSamplesAndPatientNumbers() {
+        const shownStudies = this.logic.mainView.getSelectionReport()
+            .shownStudies;
+        const sampleCount = shownStudies
+            .map(study => study.allSampleCount)
+            .reduce((a, b) => a + b, 0);
+        const sampleCountFilter: JSX.Element[] = [];
+        const filterAttributes = StudyFilterOptionsFormatted.filter(item =>
+            this.store.dataTypeFilters.includes(item.id)
+        ).map(resultItem => resultItem.name);
+        const sampleCountsPerFilter = this.store.dataTypeFilters.map(filter => {
+            const countPerFilter: number[] = [];
+            shownStudies.map(study => {
+                const keys = Object.keys(study) as (keyof typeof study)[];
+                for (const keyIndex in keys) {
+                    if (keys[keyIndex] == filter) {
+                        countPerFilter.push(
+                            Object.values(study)[keyIndex] as number
+                        );
+                    }
+                }
+            });
+            return countPerFilter.reduce((a, b) => a + b, 0);
+        });
+        filterAttributes.map((item, i) =>
+            sampleCountFilter.push(
+                <text style={{ paddingLeft: 5 }}>
+                    <b>{item}</b>:{sampleCountsPerFilter[i]}
+                </text>
+            )
+        );
+        return (
+            <text>
+                <b>Total samples</b>:{sampleCount} {sampleCountFilter}
+            </text>
+        );
+    }
+
     private windowSizeDisposer: IReactionDisposer;
 
     componentDidMount(): void {
@@ -425,6 +463,11 @@ export default class CancerStudySelector extends React.Component<
                                                           })`}
                                                 </strong>
                                             </label>
+                                            {shownStudies.length <
+                                                this.store.cancerStudies.result
+                                                    .length &&
+                                                this
+                                                    .showSamplesAndPatientNumbers}
                                         </Else>
                                     </If>
                                 </If>

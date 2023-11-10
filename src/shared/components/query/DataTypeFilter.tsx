@@ -32,6 +32,15 @@ export const DataTypeFilter: FunctionComponent<IDataTypeFilterProps> = props => 
                         className="btn-sm"
                     >
                         {props.buttonText}
+                        {props.store.dataTypeFilters!.length > 0 && (
+                            <span
+                                className="oncoprintDropdownCount"
+                                style={{ marginLeft: 5 }}
+                            >
+                                {props.store.dataTypeFilters!.length} /{' '}
+                                {props.dataFilterActive!.length}
+                            </span>
+                        )}
                     </Dropdown.Toggle>
                     <Dropdown.Menu
                         {...({ bsRole: 'menu' } as DropdownMenuProps)}
