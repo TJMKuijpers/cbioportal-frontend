@@ -18,6 +18,7 @@ export type IDataTypeFilterProps = {
     buttonText: string | JSX.Element;
     dataFilterActive?: IFilterDef[];
     store: QueryStore;
+    samplePerStudy: any[];
 };
 
 export const DataTypeFilter: FunctionComponent<IDataTypeFilterProps> = props => {
@@ -50,27 +51,45 @@ export const DataTypeFilter: FunctionComponent<IDataTypeFilterProps> = props => 
                             maxHeight: 300,
                             whiteSpace: 'nowrap',
                             paddingRight: 10,
-                            width: 'auto',
+                            width: 300,
                         }}
                     >
-                        {props.dataFilterActive!.map(type => {
+                        {props.dataFilterActive!.map((type, i) => {
                             return (
-                                <label style={{ paddingTop: 5 }}>
-                                    <input
-                                        type="checkbox"
-                                        style={{ marginRight: 2 }}
-                                        onClick={() => {
-                                            type.checked = !type.checked;
-                                            props.store.dataTypeFilters = createDataTypeUpdate(
-                                                props.dataFilterActive!
-                                            );
+                                <div style={{ display: 'inline' }}>
+                                    <label
+                                        style={{
+                                            paddingTop: 5,
+                                            float: 'left',
+                                            width: '75%',
                                         }}
-                                    />
-                                    {}
-                                    <span style={{ paddingLeft: 5 }}>
-                                        {type.name}
-                                    </span>
-                                </label>
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            style={{ marginRight: 2 }}
+                                            onClick={() => {
+                                                type.checked = !type.checked;
+                                                props.store.dataTypeFilters = createDataTypeUpdate(
+                                                    props.dataFilterActive!
+                                                );
+                                            }}
+                                        />
+                                        {}
+                                        <span style={{ paddingLeft: 5 }}>
+                                            {type.name}
+                                        </span>
+                                    </label>
+                                    <label
+                                        style={{
+                                            paddingTop: 5,
+                                            float: 'right',
+                                            color: 'lightgrey',
+                                            marginRight: 2,
+                                        }}
+                                    >
+                                        {props.samplePerStudy![i]}
+                                    </label>
+                                </div>
                             );
                         })}
                     </Dropdown.Menu>
@@ -78,7 +97,6 @@ export const DataTypeFilter: FunctionComponent<IDataTypeFilterProps> = props => 
             </div>
         </div>
     );
-    //}
 };
 
 export function createDataTypeUpdate(allFilters: IFilterDef[]): string[] {

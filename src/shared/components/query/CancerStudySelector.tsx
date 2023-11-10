@@ -212,19 +212,21 @@ export default class CancerStudySelector extends React.Component<
         }
     }
 
-    @computed get showSamplesAndPatientNumbers() {
+    @computed get showSamplesPerStudy() {
         const shownStudies = this.logic.mainView.getSelectionReport()
             .shownStudies;
-        const sampleCount = shownStudies
-            .map(study => study.allSampleCount)
-            .reduce((a, b) => a + b, 0);
-        const sampleCountFilter: JSX.Element[] = [];
-        const filterAttributes = StudyFilterOptionsFormatted.filter(item =>
-            this.store.dataTypeFilters.includes(item.id)
-        ).map(resultItem => resultItem.name);
-        const sampleCountsPerFilter = this.store.dataTypeFilters.map(filter => {
+        const studyForCalculation =
+            shownStudies.length < this.store.cancerStudies.result.length
+                ? shownStudies
+                : this.store.cancerStudies.result;
+        const filterAttributes = StudyFilterOptionsFormatted.filter(
+            item => item.name
+        );
+        const sampleCountsPerFilter = StudyFilterOptionsFormatted.map(
+            item => item.id
+        ).map(filter => {
             const countPerFilter: number[] = [];
-            shownStudies.map(study => {
+            studyForCalculation.map(study => {
                 const keys = Object.keys(study) as (keyof typeof study)[];
                 for (const keyIndex in keys) {
                     if (keys[keyIndex] == filter) {
@@ -236,18 +238,7 @@ export default class CancerStudySelector extends React.Component<
             });
             return countPerFilter.reduce((a, b) => a + b, 0);
         });
-        filterAttributes.map((item, i) =>
-            sampleCountFilter.push(
-                <text style={{ paddingLeft: 5 }}>
-                    <b>{item}</b>:{sampleCountsPerFilter[i]}
-                </text>
-            )
-        );
-        return (
-            <text>
-                <b>Total samples</b>:{sampleCount} {sampleCountFilter}
-            </text>
-        );
+        return sampleCountsPerFilter;
     }
 
     private windowSizeDisposer: IReactionDisposer;
@@ -349,6 +340,9 @@ export default class CancerStudySelector extends React.Component<
                                                 StudyFilterOptionsFormatted
                                             }
                                             store={this.store}
+                                            samplePerStudy={
+                                                this.showSamplesPerStudy
+                                            }
                                         />
                                     </div>
                                     <div
@@ -463,11 +457,11 @@ export default class CancerStudySelector extends React.Component<
                                                           })`}
                                                 </strong>
                                             </label>
-                                            {shownStudies.length <
+                                            {/*{shownStudies.length <
                                                 this.store.cancerStudies.result
                                                     .length &&
                                                 this
-                                                    .showSamplesAndPatientNumbers}
+                                                    .showSamplesAndPatientNumbers}*/}
                                         </Else>
                                     </If>
                                 </If>
