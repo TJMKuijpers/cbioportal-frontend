@@ -27,10 +27,9 @@ import {
     getPercentageOfMutationalCount,
     prepareMutationalSignatureDataForTable,
 } from './MutationalSignatureBarChartUtils';
-import { DownloadControls } from 'cbioportal-frontend-commons';
+import { DefaultTooltip, DownloadControls } from 'cbioportal-frontend-commons';
 import classNames from 'classnames';
 import { MutationalSignatureTableDataStore } from 'pages/patientView/mutationalSignatures/MutationalSignaturesDataStore';
-import { PatientViewPageStore } from 'pages/patientView/clinicalInformation/PatientViewPageStore';
 
 export interface IMutationalSignaturesContainerProps {
     data: { [version: string]: IMutationalSignature[] };
@@ -191,7 +190,7 @@ export default class MutationalSignaturesContainer extends React.Component<
     @action.bound
     private handleCountClick() {
         this.selectedScale = AxisScale.COUNT;
-        this.yAxisLabel = 'Mutational count (value)';
+        this.yAxisLabel = 'Mutational count';
     }
 
     @computed get getDataForGraph(): IMutationalCounts[] {
@@ -246,6 +245,7 @@ export default class MutationalSignaturesContainer extends React.Component<
         this.signatureURL = d.url;
         this.signatureProfile = d.name;
         this.signatureToPlot = d.name;
+        this.updateReferencePlot = true;
         this.mutationalSignatureTableStore.setSelectedMutSig(d);
         if (this.mutationalSignatureTableStore.selectedMutSig.length > 0) {
             this.mutationalSignatureTableStore.setclickedMutSig(d);
@@ -261,11 +261,6 @@ export default class MutationalSignaturesContainer extends React.Component<
         this.signatureURL = d.url;
         this.signatureProfile = d.name;
     }
-
-    /* @autobind
-    onMutationalSignatureTableMouseLeave() {
-        this.patientViewMutationDataStore.setMouseOverMutation(null);
-    }*/
 
     @computed get mutationalSignatureDataForTable() {
         return prepareMutationalSignatureDataForTable(
@@ -294,6 +289,30 @@ export default class MutationalSignaturesContainer extends React.Component<
                                 }}
                             >
                                 Version:
+                                <DefaultTooltip
+                                    placement="right"
+                                    overlay={
+                                        <span>
+                                            <b>
+                                                Mutational signature description
+                                                (COSMIC):{' '}
+                                            </b>{' '}
+                                            <br />
+                                            <b>SBS</b>: Single Base Substitution{' '}
+                                            <br />
+                                            <b>DBS</b>: Double Base Substitution{' '}
+                                            <br />
+                                            <b>ID</b>: Small Insertions and
+                                            Deletions <br />
+                                        </span>
+                                    }
+                                    destroyTooltipOnHide={true}
+                                >
+                                    <i
+                                        className="fa fa-lg fa-question-circle"
+                                        style={{ paddingLeft: 5 }}
+                                    ></i>
+                                </DefaultTooltip>
                                 <Select
                                     className="basic-single"
                                     name={'mutationalSignaturesVersionSelector'}

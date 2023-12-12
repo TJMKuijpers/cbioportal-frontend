@@ -5,8 +5,10 @@ import {
 } from 'shared/model/MutationalSignature';
 import { scalePoint, scaleBand } from 'd3-scale';
 import { IMutationalSignatureRow } from 'pages/patientView/clinicalInformation/ClinicalInformationMutationalSignatureTable';
+import { computed } from 'mobx';
 export interface IColorLegend extends IColorDataBar {
     group: string;
+    axisLabel: string;
     subcategory?: string;
 }
 
@@ -304,7 +306,12 @@ export function getColorsForSignatures(
                     }
                 }
             });
-            const label = obj.mutationalSignatureLabel;
+            const label = formatTooltipLabelCosmicStyle(
+                obj.version,
+                obj.mutationalSignatureLabel,
+                colorIdentity
+            );
+            const axisLabel = obj.mutationalSignatureLabel;
             const group: string =
                 colorIdentity.length > 0
                     ? colorIdentity[colorIdentity.length - 1].category
@@ -317,13 +324,14 @@ export function getColorsForSignatures(
                 'subcategory' in colorIdentity[colorIdentity.length - 1]
                     ? colorIdentity[colorIdentity.length - 1].subcategory!
                     : ' ';
-            return { ...obj, colorValue, label, subcategory, group };
+            return { ...obj, colorValue, label, axisLabel, subcategory, group };
         } else {
             const label = obj.mutationalSignatureLabel;
+            const axisLabel = obj.mutationalSignatureLabel;
             const colorValue = '#EE4B2B';
             const group = ' ';
             const subcategory: string = ' ';
-            return { ...obj, colorValue, label, subcategory, group };
+            return { ...obj, colorValue, label, axisLabel, subcategory, group };
         }
     });
     if (colorTableData[0].group !== ' ') {
@@ -531,4 +539,58 @@ export function prepareMutationalSignatureDataForTable(
         }
     }
     return tableData;
+}
+
+export function formatTooltipLabelCosmicStyle(
+    version: string,
+    label: string,
+    category: ColorMapProps[]
+): string {
+    if (version == 'SBS') {
+        const labelSplit = label.split('_').map((x, i) => {
+            return i == 1 ? '[' + x.replace('-', '->') + ']' : x;
+        });
+        return labelSplit.length > 1
+            ? 'Single nucleotide substitution of ' +
+                  labelSplit[1] +
+                  ' around ' +
+                  labelSplit.join('')
+            : label;
+    } else if (version == 'DBS') {
+        const labelSplit = label.split('-');
+        return labelSplit.length > 1
+            ? 'Double nucleotide substitution of ' +
+                  labelSplit[0] +
+                  ' to ' +
+                  labelSplit[1]
+            : label;
+    } else if (version == 'ID') {
+        const formatedLabel = formatIDlabelsCosmicStyle(label, category);
+        return formatedLabel !== '' ? formatedLabel : label;
+    } else {
+        return label;
+    }
+}
+
+function formatIDlabelsCosmicStyle(
+    label: string,
+    information: ColorMapProps[]
+): string {
+    if (information[0].category == 'Microhomology') {
+        return 'Microhomology length ' + information[0].subcategory;
+    } else if (information[0].category == '>1bp insertion') {
+        return 'Number of repeat units ' + information[0].subcategory;
+    } else if (information[0].category == '>1bp deletion') {
+        return 'Number of repeat units ' + information[0].subcategory;
+    } else if (information[0].category == '1bp deletion') {
+        return (
+            'Homopolymer length of ' + information[0].subcategory + ' deletion'
+        );
+    } else if (information[0].category == '1bp insertion') {
+        return (
+            'Homopolymer length of ' + information[0].subcategory + ' insertion'
+        );
+    } else {
+        return '';
+    }
 }
