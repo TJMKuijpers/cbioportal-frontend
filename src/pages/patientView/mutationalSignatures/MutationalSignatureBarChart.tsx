@@ -19,6 +19,8 @@ import {
     getCenterPositionLabelEntries,
     DataToPlot,
     addColorsForReferenceData,
+    LegendLabelsType,
+    createXAxisAnnotation,
 } from './MutationalSignatureBarChartUtils';
 import { CBIOPORTAL_VICTORY_THEME } from 'cbioportal-frontend-commons';
 
@@ -33,6 +35,7 @@ export interface IMutationalBarChartProps {
     version: string;
     sample: string;
     label: string;
+    selectedScale: string;
     initialReference: string;
     updateReference: boolean;
 }
@@ -46,12 +49,14 @@ theme.legend.style.data = {
 };
 type FrequencyData = { channel: string; frequency: number };
 
-type SignatureData = { [signature: string]: FrequencyData };
-
-type VersionData = { [version: string]: SignatureData };
-
 const cosmicReferenceData = require('./cosmic_reference.json');
-
+const offSetYAxis = 45;
+const heightYAxis = 300;
+const xMaxOffset: { [version: string]: { offset: number } } = {
+    SBS: { offset: 28 },
+    DBS: { offset: 14 },
+    ID: { offset: 25 },
+};
 @observer
 export default class MutationalBarChart extends React.Component<
     IMutationalBarChartProps,
@@ -61,31 +66,46 @@ export default class MutationalBarChart extends React.Component<
         super(props);
     }
 
+    //@observable graphWidth = WindowStore.size.width - 100;
+    @observable graphWidth = 1800;
     @computed get xTickLabels(): string[] {
-        return getColorsForSignatures(this.props.data).map(item => item.label);
+        return getColorsForSignatures(
+            this.props.data,
+            this.props.selectedScale
+        ).map(item => item.label);
     }
 
     @computed get yAxisDomain(): number[] {
-        const maxValue = this.props.data.reduce(
-            (previous: IMutationalCounts, current: IMutationalCounts) => {
-                return current.value > previous.value ? current : previous;
-            }
-        );
-        const minValue = this.props.data.reduce(
-            (previous: IMutationalCounts, current: IMutationalCounts) => {
-                return current.value < previous.value ? current : previous;
-            }
-        );
-        if (minValue.value !== maxValue.value) {
-            return [Math.round(minValue.value), Math.round(maxValue.value)];
+        if (this.props.selectedScale == '%') {
+            return [0, 100];
         } else {
-            return [0, 10];
+            const maxValue = this.props.data.reduce(
+                (previous: IMutationalCounts, current: IMutationalCounts) => {
+                    return current.value > previous.value ? current : previous;
+                }
+            );
+            const minValue = this.props.data.reduce(
+                (previous: IMutationalCounts, current: IMutationalCounts) => {
+                    return current.value < previous.value ? current : previous;
+                }
+            );
+            if (minValue.value !== maxValue.value) {
+                return [Math.round(minValue.value), Math.round(maxValue.value)];
+            } else {
+                return [0, 10];
+            }
         }
     }
 
     @computed get getGroupedData() {
         if (this.props.data[0].mutationalSignatureLabel != '') {
-            return _.groupBy(getColorsForSignatures(this.props.data), 'group');
+            return _.groupBy(
+                getColorsForSignatures(
+                    this.props.data,
+                    this.props.selectedScale
+                ),
+                'group'
+            );
         } else {
             return this.props.data;
         }
@@ -95,29 +115,16 @@ export default class MutationalBarChart extends React.Component<
     }
 
     @computed get formatLegendTopAxisPoints() {
-        const labelObjects = getColorsForSignatures(this.props.data).map(
-            entry => ({
-                group: entry.group,
-                label: entry.label,
-                color: entry.colorValue,
-                subcategory: entry.subcategory,
-            })
-        );
-        const legendObjects = getLegendEntriesBarChart(labelObjects);
         const lengthLegendObjects = getCenterPositionLabelEntries(
-            legendObjects
+            this.getLegendObjects
         );
         const legendOjbectsToAdd = createLegendLabelObjects(
             lengthLegendObjects,
-            legendObjects,
+            this.getLegendObjects,
             this.getMutationalSignaturesGroupLabels
         );
-        const centerOfBoxes = this.formatColorBoxLegend;
-        const xScale = getxScalePoint(
-            labelObjects,
-            60,
-            WindowStore.size.width - 90
-        );
+        const centerOfBoxes = this.colorRectangles;
+        const xScale = getxScalePoint(this.labelObjects, 60, this.graphWidth);
         return legendOjbectsToAdd.map((item, i) => {
             return (
                 <VictoryLabel
@@ -125,10 +132,10 @@ export default class MutationalBarChart extends React.Component<
                         this.props.version != 'ID'
                             ? centerOfBoxes[i].props.x +
                               0.5 * centerOfBoxes[i].props.width
-                            : xScale(item.value)
+                            : this.getXScale(item.value)! + 25
                     }
                     y={8}
-                    width={this.props.width}
+                    width={this.graphWidth}
                     text={item.group}
                     style={{ fontSize: '15px', padding: 5, fontWeight: 'bold' }}
                     textAnchor={'middle'}
@@ -137,40 +144,67 @@ export default class MutationalBarChart extends React.Component<
         });
     }
 
-    @computed get formatColorBoxLegend() {
-        const legendLabels = getColorsForSignatures(this.props.data).map(
-            entry => ({
-                group: entry.group,
-                label: entry.mutationalSignatureLabel,
-                color: entry.colorValue,
-                subcategory: entry.subcategory,
-            })
+    @computed get labelObjects() {
+        return getColorsForSignatures(
+            this.props.data,
+            this.props.selectedScale
+        ).map(entry => ({
+            group: entry.group,
+            label: entry.mutationalSignatureLabel,
+            color: entry.colorValue,
+            subcategory: entry.subcategory,
+            value: entry.label,
+        }));
+    }
+
+    @computed get legendInfo() {
+        const lengthLegendObjects = getLengthLabelEntries(
+            this.getLegendObjects
         );
-        const xScale = getxScalePoint(
-            legendLabels,
-            60,
-            WindowStore.size.width - 115
-        );
-        const legendEntries = getLegendEntriesBarChart(legendLabels);
-        const lengthLegendObjects = getLengthLabelEntries(legendEntries);
-        const legendInfoBoxes = formatLegendObjectsForRectangles(
+        return formatLegendObjectsForRectangles(
             lengthLegendObjects,
-            legendEntries,
+            this.getLegendObjects,
             this.getMutationalSignaturesGroupLabels,
-            this.props.version
+            this.props.version,
+            'subcategory'
         );
-        console.log(legendInfoBoxes);
+    }
+    @action calculateXPositionRectangle(
+        item: DrawRectInfo,
+        index: number,
+        xScale: any
+    ) {
+        if (this.props.version == 'SBS') {
+            return index == 0 ? xScale(item.start)! : xScale(item.start)!;
+        } else if (this.props.version == 'DBS') {
+            return index == 0 ? xScale(item.start)! : xScale(item.start)! - 5;
+        } else {
+            return index == 0 ? xScale(item.start)! : xScale(item.start)!;
+        }
+    }
+
+    @computed get getXScale() {
+        return getxScalePoint(
+            this.labelObjects,
+            55,
+            this.graphWidth - xMaxOffset[this.props.version].offset
+        );
+    }
+
+    @computed get colorRectangles() {
+        const legendInfoBoxes = this.legendInfo;
         const legendRectsChart: JSX.Element[] = [];
-        legendInfoBoxes.forEach((item: DrawRectInfo) => {
+        const xScale = this.getXScale;
+        legendInfoBoxes.forEach((item: DrawRectInfo, index: number) => {
             legendRectsChart.push(
                 <rect
-                    x={xScale(item.start)! - 1}
+                    x={this.calculateXPositionRectangle(item, index, xScale)}
                     y={15}
                     fill={item.color}
                     width={
                         xScale(item.end)! - xScale(item.start)! > 0
-                            ? xScale(item.end)! - xScale(item.start)!
-                            : 6
+                            ? xScale(item.end)! - xScale(item.start)! + 10
+                            : 20
                     }
                     height="20"
                 />
@@ -179,21 +213,8 @@ export default class MutationalBarChart extends React.Component<
         return legendRectsChart;
     }
 
-    @computed get getSubLabelsLegend() {
-        const groupedData = _.groupBy(
-            getColorsForSignatures(this.props.data),
-            g => g.group
-        );
-        const legendLabels = getColorsForSignatures(this.props.data).map(
-            entry => ({
-                group: entry.group,
-                label: entry.mutationalSignatureLabel,
-                color: entry.colorValue,
-                subcategory: entry.subcategory,
-                value: entry.label,
-            })
-        );
-        const uniqueSubLabels = legendLabels.filter(
+    @computed get uniqueLabelsForRectangles() {
+        return this.labelObjects.filter(
             (value, index, self) =>
                 index ===
                 self.findIndex(
@@ -202,13 +223,16 @@ export default class MutationalBarChart extends React.Component<
                         t.subcategory === value.subcategory
                 )
         );
+    }
 
-        const centerOfBoxes = this.formatColorBoxLegend;
+    @computed get getSubLabelsForRectangles() {
+        const centerOfBoxes = this.colorRectangles;
         const subLabelsForBoxes = formatLegendObjectsForRectangles(
-            [uniqueSubLabels.length],
-            uniqueSubLabels,
-            uniqueSubLabels.map(item => item.subcategory!),
-            this.props.version
+            [this.uniqueLabelsForRectangles.length],
+            this.uniqueLabelsForRectangles,
+            this.uniqueLabelsForRectangles.map(item => item.subcategory!),
+            this.props.version,
+            'subcategory'
         );
         const legendLabelsChart: JSX.Element[] = [];
         subLabelsForBoxes.forEach((item: LabelInfo, i: number) => {
@@ -229,54 +253,40 @@ export default class MutationalBarChart extends React.Component<
         return legendLabelsChart;
     }
 
-    @computed get getSubLabelsAxis() {
-        const groupedData = _.groupBy(
-            getColorsForSignatures(this.props.data),
-            g => g.group
-        );
-        const legendLabels = getColorsForSignatures(this.props.data).map(
-            entry => ({
-                group: entry.group,
-                label: entry.mutationalSignatureLabel,
-                color: entry.colorValue,
-                subcategory: entry.subcategory,
-                value: entry.label,
-            })
-        );
-        const uniqueSubLabels = legendLabels.filter(
-            (value, index, self) =>
-                index ===
-                self.findIndex(
-                    t =>
-                        t.group === value.group &&
-                        t.subcategory === value.subcategory
-                )
-        );
+    @computed get getLegendObjects() {
+        return getLegendEntriesBarChart(this.labelObjects);
+    }
 
-        const centerOfBoxes = this.formatColorBoxLegend;
-        const subLabelsForBoxes = formatLegendObjectsForRectangles(
-            [uniqueSubLabels.length],
-            uniqueSubLabels,
-            uniqueSubLabels.map(item => item.subcategory!),
-            this.props.version
+    @computed get xAxisLabelsInDel() {
+        const lengthLegendObjects = getCenterPositionLabelEntries(
+            this.getLegendObjects
         );
-        const legendLabelsChart: JSX.Element[] = [];
-        subLabelsForBoxes.forEach((item: LabelInfo, i: number) => {
-            legendLabelsChart.push(
+        const legendOjbectsToAdd = createLegendLabelObjects(
+            lengthLegendObjects,
+            this.getLegendObjects,
+            this.getMutationalSignaturesGroupLabels
+        );
+        const centerOfBoxes = this.colorRectangles;
+
+        const replaceLabels = [
+            'Homopolymer length',
+            'Homopolymer length',
+            'Number of repeat units',
+            'Number of repeat units',
+            'Microhomology',
+        ];
+        return legendOjbectsToAdd.map((item, i) => {
+            return (
                 <VictoryLabel
-                    x={
-                        centerOfBoxes[i].props.x +
-                        0.5 * centerOfBoxes[i].props.width
-                    }
-                    y={25}
+                    x={this.getXScale(item.value)! + 25}
+                    y={310}
                     width={this.props.width}
-                    text={item.category}
-                    style={{ fontSize: '15', fontWeight: 'bold' }}
+                    text={replaceLabels[i]}
+                    style={{ fontSize: '15px', padding: 5, fontWeight: 'bold' }}
                     textAnchor={'middle'}
                 />
             );
         });
-        return legendLabelsChart;
     }
 
     @computed get formatLabelsCosmicStyle(): string[] {
@@ -287,7 +297,7 @@ export default class MutationalBarChart extends React.Component<
                 const labelSplit = label
                     .split('_')
                     .map((x, i) => {
-                        return i == 1 ? '(' + x.split('-')[0] + ')' : x;
+                        return i == 1 ? x.split('-')[0] : x;
                     })
                     .join('');
                 cosmicLabel.push(labelSplit);
@@ -323,48 +333,64 @@ export default class MutationalBarChart extends React.Component<
                 };
             }
         );
-        const referenceSorted = this.getSortedReferenceSignatures(
-            referenceData
-        );
+        const referenceSorted = this.sortReferenceSignatures(referenceData);
         return addColorsForReferenceData(referenceSorted);
     }
 
-    @computed get yAxisDomainReference(): number[] {
-        const currentSignature: string =
-            typeof this.props.signature !== 'undefined'
-                ? this.props.signature.split(' ')[0]
-                : this.props.initialReference.split(' ')[0];
-        const currentReferenceData: FrequencyData[] =
-            cosmicReferenceData['v3.3']['GRCh37'][this.props.version][
-                currentSignature
-            ];
-        const maxValue = currentReferenceData.reduce(
-            (previous: FrequencyData, current: FrequencyData) => {
-                return current.frequency > previous.frequency
-                    ? current
-                    : previous;
-            }
+    @computed get colorBoxXAxis() {
+        const legendLabels = getColorsForSignatures(
+            this.props.data,
+            this.props.selectedScale
+        ).map(entry => ({
+            group: entry.group,
+            label: entry.mutationalSignatureLabel,
+            color: entry.colorValue,
+            subcategory: entry.subcategory,
+        }));
+        const xScale = getxScalePoint(
+            this.labelObjects,
+            55,
+            this.graphWidth - xMaxOffset[this.props.version].offset
         );
-        const minValue = currentReferenceData.reduce(
-            (previous: FrequencyData, current: FrequencyData) => {
-                return current.frequency < previous.frequency
-                    ? current
-                    : previous;
-            }
+        const legendEntries = getLegendEntriesBarChart(legendLabels);
+        const lengthLegendObjects = getLengthLabelEntries(legendEntries);
+        const legendInfoBoxes = formatLegendObjectsForRectangles(
+            lengthLegendObjects,
+            legendEntries,
+            this.getMutationalSignaturesGroupLabels,
+            this.props.version,
+            'subcategory'
         );
-        return [maxValue.frequency * 100, minValue.frequency * 100];
+        const legendRectsChart: JSX.Element[] = [];
+        legendInfoBoxes.forEach((item: DrawRectInfo, index: number) => {
+            legendRectsChart.push(
+                <rect
+                    x={this.calculateXPositionRectangle(item, index, xScale)}
+                    y={280}
+                    fill={item.color}
+                    width={
+                        xScale(item.end)! - xScale(item.start)! > 0
+                            ? xScale(item.end)! - xScale(item.start)! + 12
+                            : 15
+                    }
+                    height="20"
+                />
+            );
+        });
+        return legendRectsChart;
     }
 
     @action getLabels(data: IMutationalCounts[]): string[] {
-        return getColorsForSignatures(data).map(
+        return getColorsForSignatures(data, this.props.selectedScale).map(
             item => item.mutationalSignatureLabel
         );
     }
 
-    @action getSortedReferenceSignatures(referenceData: any) {
-        const labelsOrder = getColorsForSignatures(this.props.data).map(
-            item => item.label
-        );
+    @action sortReferenceSignatures(referenceData: DataToPlot[]) {
+        const labelsOrder = getColorsForSignatures(
+            this.props.data,
+            this.props.selectedScale
+        ).map(item => item.mutationalSignatureLabel, this.props.selectedScale);
         const referenceOrder = referenceData.map(
             (itemReference: any) => itemReference.mutationalSignatureLabel
         );
@@ -396,11 +422,9 @@ export default class MutationalBarChart extends React.Component<
             : referenceString + '\n' + this.props.signature + ' (%)';
     }
 
-    @observable showReferencePlot: boolean = false;
-
     @action getTranslateDistance(defaultValue: number): number {
         return this.props.version == 'SBS'
-            ? defaultValue + 0
+            ? defaultValue - 10
             : this.props.version == 'DBS'
             ? defaultValue - 15
             : defaultValue - 25;
@@ -408,17 +432,18 @@ export default class MutationalBarChart extends React.Component<
 
     public render() {
         return (
-            <div style={{ paddingTop: '10', paddingLeft: '50' }}>
+            <div style={{ paddingTop: 10, paddingLeft: 0, width: 1500 }}>
                 <svg
                     height={600}
-                    width={WindowStore.size.width - 50}
+                    width={this.graphWidth}
                     style={{ paddingLeft: '30', paddingTop: 20 }}
                     xmlns="http://www.w3.org/2000/svg"
                     ref={this.props.svgRef}
                 >
                     {this.formatLegendTopAxisPoints}
-                    {this.formatColorBoxLegend}
-                    {this.props.version == 'ID' && this.getSubLabelsLegend}
+                    {this.colorRectangles}
+                    {this.props.version == 'ID' &&
+                        this.getSubLabelsForRectangles}
                     <g transform={'translate(10,0)'}>
                         <VictoryAxis
                             dependentAxis
@@ -428,8 +453,8 @@ export default class MutationalBarChart extends React.Component<
                                 Number.isInteger(t) ? t.toFixed(0) : ''
                             }
                             height={300}
-                            width={WindowStore.size.width - 100}
-                            offsetX={45}
+                            width={this.graphWidth + 45}
+                            offsetX={offSetYAxis}
                             style={{
                                 axis: { strokeWidth: 1 },
                                 axisLabel: {
@@ -446,7 +471,7 @@ export default class MutationalBarChart extends React.Component<
                                 grid: {
                                     stroke: 'lightgrey',
                                     strokeWidth: 0.3,
-                                    strokeDasharray: 10,
+                                    strokeDasharray: 10.5,
                                 },
                             }}
                             standalone={false}
@@ -456,7 +481,9 @@ export default class MutationalBarChart extends React.Component<
                         <g
                             transform={
                                 'translate(10,' +
-                                this.getTranslateDistance(250) +
+                                this.getTranslateDistance(
+                                    this.props.version == 'ID' ? 300 : 250
+                                ) +
                                 ')'
                             }
                         >
@@ -465,10 +492,10 @@ export default class MutationalBarChart extends React.Component<
                                 orientation="left"
                                 invertAxis
                                 label={this.referenceAxisLabel}
-                                domain={this.yAxisDomainReference}
-                                offsetX={45}
-                                height={300}
-                                width={WindowStore.size.width - 100}
+                                domain={[100, 0]}
+                                offsetX={offSetYAxis}
+                                height={heightYAxis}
+                                width={this.graphWidth}
                                 style={{
                                     axis: { strokeWidth: 1 },
                                     axisLabel: {
@@ -500,7 +527,7 @@ export default class MutationalBarChart extends React.Component<
                     >
                         <VictoryAxis
                             tickValues={this.formatLabelsCosmicStyle}
-                            width={WindowStore.size.width - 100}
+                            width={this.graphWidth}
                             style={{
                                 axisLabel: {
                                     fontSize: '8px',
@@ -525,9 +552,10 @@ export default class MutationalBarChart extends React.Component<
                     <g transform={'translate(10,0)'}>
                         <VictoryBar
                             barRatio={1}
-                            barWidth={8}
-                            width={WindowStore.size.width - 100}
-                            height={300}
+                            barWidth={7}
+                            width={this.graphWidth}
+                            domain={{ y: this.yAxisDomain }}
+                            height={heightYAxis}
                             labels={this.formatLabelsCosmicStyle}
                             labelComponent={
                                 <VictoryTooltip
@@ -545,8 +573,11 @@ export default class MutationalBarChart extends React.Component<
                                 />
                             }
                             alignment="middle"
-                            data={getColorsForSignatures(this.props.data)}
-                            x="label"
+                            data={getColorsForSignatures(
+                                this.props.data,
+                                this.props.selectedScale
+                            )}
+                            x="mutationalSignatureLabel"
                             y="value"
                             style={{
                                 data: {
@@ -561,34 +592,37 @@ export default class MutationalBarChart extends React.Component<
                             transform={
                                 'translate(' +
                                 this.getTranslateDistance(
-                                    (WindowStore.size.width - 200) / 2
+                                    (this.graphWidth - 200) / 2
                                 ) +
                                 ',' +
                                 this.getTranslateDistance(400) +
                                 ')'
                             }
-                            style={{ borderStyle: 'dotted' }}
                         >
-                            <text>
-                                Select a reference signature to show the
-                                reference plot
+                            <text style={{ border: '2px solid #ccc' }}>
+                                Select a signature from the table to show the
+                                reference signature plot
                             </text>
                         </g>
                     )}
-                    {this.props.version == 'ID' && this.getSubLabelsAxis}
+                    {this.props.version == 'ID' && this.colorBoxXAxis}
+                    {this.props.version == 'ID' && this.xAxisLabelsInDel}
                     {this.props.updateReference && (
                         <g
                             transform={
                                 'translate(10,' +
-                                this.getTranslateDistance(250) +
+                                this.getTranslateDistance(
+                                    this.props.version == 'ID' ? 300 : 250
+                                ) +
                                 ')'
                             }
                         >
                             <VictoryBar
                                 barRatio={1}
-                                barWidth={8}
-                                width={WindowStore.size.width - 100}
+                                barWidth={7}
+                                width={this.graphWidth}
                                 height={300}
+                                domain={{ y: [-100, 0] }}
                                 data={this.getReferenceSignatureToPlot}
                                 x="label"
                                 y="value"

@@ -8,7 +8,6 @@ import { IMutationalSignatureRow } from 'pages/patientView/clinicalInformation/C
 import { computed } from 'mobx';
 export interface IColorLegend extends IColorDataBar {
     group: string;
-    axisLabel: string;
     subcategory?: string;
 }
 
@@ -16,6 +15,7 @@ export interface IColorDataBar extends IMutationalCounts {
     colorValue: string;
     label: string;
     subcategory?: string;
+    sublabel?: string;
 }
 
 export interface ColorMapProps {
@@ -24,6 +24,7 @@ export interface ColorMapProps {
     category: string;
     color: string;
     subcategory?: string;
+    sublabel?: string;
 }
 
 export interface LegendLabelsType {
@@ -31,6 +32,7 @@ export interface LegendLabelsType {
     label: string;
     color: string;
     subcategory?: string;
+    sublabel?: string;
 }
 export interface DrawRectInfo {
     color: string;
@@ -43,6 +45,7 @@ export interface LabelInfo {
     end: string;
     category: string;
     group: string;
+    sublabel: string;
 }
 export interface LegendEntriesType {
     group: string;
@@ -147,6 +150,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '1_Del_C_',
         category: '1bp deletion',
         subcategory: 'C',
+        sublabel: 'Homopolymer length',
         color: '#f39c12',
     },
     {
@@ -154,6 +158,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '1_Del_T_',
         category: '1bp deletion',
         subcategory: 'T',
+        sublabel: 'Homopolymer length',
         color: '#d68910',
     },
     {
@@ -161,6 +166,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '2_Del_R_',
         category: '>1bp deletion',
         subcategory: '2',
+        sublabel: 'Number of Repeat Units',
         color: '#f1948a',
     },
     {
@@ -168,6 +174,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '2_Del_M',
         category: 'Microhomology',
         subcategory: '2',
+        sublabel: 'Microhomology length',
         color: '#D2B7F2',
     },
     {
@@ -175,6 +182,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '3_Del_R',
         category: '>1bp deletion',
         subcategory: '3',
+        sublabel: 'Number of Repeat Units',
         color: '#ec7063',
     },
     {
@@ -182,6 +190,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '3_Del_M',
         category: 'Microhomology',
         subcategory: '3',
+        sublabel: 'Microhomology length',
         color: '#E194EB',
     },
     {
@@ -189,6 +198,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '4_Del_R',
         category: '>1bp deletion',
         subcategory: '4',
+        sublabel: 'Number of Repeat Units',
         color: '#e74c3c',
     },
     {
@@ -196,6 +206,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '4_Del_M',
         category: 'Microhomology',
         subcategory: '4',
+        sublabel: 'Microhomology length',
         color: '#DD75EA',
     },
     {
@@ -203,6 +214,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '5_Del_R',
         category: '>1bp deletion',
         subcategory: '5',
+        sublabel: 'Number of Repeat Units',
         color: '#F7406C',
     },
     {
@@ -210,6 +222,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '5_Del_M',
         category: 'Microhomology',
         subcategory: '5',
+        sublabel: 'Microhomology length',
         color: '#DB3AEE',
     },
     {
@@ -217,6 +230,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '1_Ins_T',
         category: '1bp insertion',
         subcategory: 'T',
+        sublabel: 'Homopolymer length',
         color: '#28b463',
     },
     {
@@ -224,6 +238,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '1_Ins_C',
         category: '1bp insertion',
         subcategory: 'C',
+        sublabel: 'Homopolymer length',
         color: '#82e0aa',
     },
     {
@@ -231,6 +246,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '2_Ins_M',
         category: 'Microhomology',
         subcategory: '2',
+        sublabel: 'Microhomology length',
         color: '#aed6f1',
     },
     {
@@ -238,6 +254,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '2_Ins_R',
         category: '>1bp insertion',
         subcategory: '2',
+        sublabel: 'Number of Repeat Units',
         color: '#33ffff',
     },
     {
@@ -245,6 +262,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '3_Ins_M',
         category: 'Microhomology',
         subcategory: '3',
+        sublabel: 'Microhomology length',
         color: '#85c1e9',
     },
     {
@@ -252,6 +270,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '3_Ins_R',
         category: '>1bp insertion',
         subcategory: '3',
+        sublabel: 'Number of Repeat Units',
         color: '#aed6F1',
     },
     {
@@ -259,6 +278,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '4_Ins_M',
         category: 'Microhomology',
         subcategory: '4',
+        sublabel: 'Microhomology length',
         color: '#85c1e9',
     },
     {
@@ -266,6 +286,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '4_Ins_R',
         category: '>1bp insertion',
         subcategory: '4',
+        sublabel: 'Number of Repeat Units',
         color: '#5dade2',
     },
     {
@@ -273,6 +294,7 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '5_Ins_M',
         category: 'Microhomology',
         subcategory: '5',
+        sublabel: 'Microhomology length',
         color: '#3498db',
     },
     {
@@ -280,11 +302,13 @@ export const colorMap: ColorMapProps[] = [
         alternativeName: '5_Ins_R',
         category: '>1bp insertion',
         subcategory: '5',
+        sublabel: 'Number of Repeat Units',
         color: '#368BFD',
     },
 ];
 export function getColorsForSignatures(
-    dataset: IMutationalCounts[]
+    dataset: IMutationalCounts[],
+    yAxisSetting: string
 ): IColorLegend[] {
     const colorTableData = dataset.map((obj: IMutationalCounts) => {
         if (obj.mutationalSignatureLabel !== '') {
@@ -309,9 +333,10 @@ export function getColorsForSignatures(
             const label = formatTooltipLabelCosmicStyle(
                 obj.version,
                 obj.mutationalSignatureLabel,
-                colorIdentity
+                colorIdentity,
+                yAxisSetting,
+                obj.value
             );
-            const axisLabel = obj.mutationalSignatureLabel;
             const group: string =
                 colorIdentity.length > 0
                     ? colorIdentity[colorIdentity.length - 1].category
@@ -324,19 +349,22 @@ export function getColorsForSignatures(
                 'subcategory' in colorIdentity[colorIdentity.length - 1]
                     ? colorIdentity[colorIdentity.length - 1].subcategory!
                     : ' ';
-            return { ...obj, colorValue, label, axisLabel, subcategory, group };
+            const sublabel: string =
+                'sublabel' in colorIdentity[colorIdentity.length - 1]
+                    ? colorIdentity[colorIdentity.length - 1].sublabel!
+                    : ' ';
+            return { ...obj, colorValue, label, subcategory, sublabel, group };
         } else {
             const label = obj.mutationalSignatureLabel;
-            const axisLabel = obj.mutationalSignatureLabel;
             const colorValue = '#EE4B2B';
             const group = ' ';
             const subcategory: string = ' ';
-            return { ...obj, colorValue, label, axisLabel, subcategory, group };
+            const sublabel: string = '';
+            return { ...obj, colorValue, label, subcategory, sublabel, group };
         }
     });
     if (colorTableData[0].group !== ' ') {
-        const colorTableDataSorted = _.sortBy(colorTableData, 'group');
-        return colorTableDataSorted;
+        return _.sortBy(colorTableData, 'group');
     } else {
         return colorTableData;
     }
@@ -364,13 +392,15 @@ export function getPercentageOfMutationalCount(
 
 export function getxScalePoint(
     labels: LegendLabelsType[],
-    xmin: number,
-    xmax: number
+    xMin: number,
+    xMax: number
 ) {
     return scaleBand()
         .domain(labels.map((x: LegendLabelsType) => x.label))
-        .range([xmin, xmax]);
+        .range([xMin, xMax])
+        .paddingInner(0);
 }
+
 export function getLegendEntriesBarChart(
     labels: LegendLabelsType[]
 ): LegendEntriesType[] {
@@ -438,22 +468,33 @@ export function createLegendLabelObjects(
     );
 }
 
+export function createXAxisAnnotation(
+    lengthObjects: number[],
+    objects: LegendEntriesType[],
+    labels: string[]
+) {
+    return labels.map(
+        (identifier: string, i: number) =>
+            _.groupBy(objects, 'sublabel')[identifier][lengthObjects[i] - 1]
+    );
+}
+
 export function formatLegendObjectsForRectangles(
     lengthLegendObjects: number[],
     legendEntries: LegendEntriesType[],
     labels: string[],
-    version: string
+    version: string,
+    groupByString: string
 ) {
     if (version != 'ID') {
-        const formatLegendRect = lengthLegendObjects.map((value, i) => ({
+        return lengthLegendObjects.map((value, i) => ({
             color: _.groupBy(legendEntries, 'group')[labels[i]][0].color,
             start: _.groupBy(legendEntries, 'group')[labels[i]][0].value,
             end: _.groupBy(legendEntries, 'group')[labels[i]][value - 1].value,
         }));
-        return formatLegendRect;
     } else {
         // Create a new object grouped by 'group' and 'subcategory
-        const dataGroupByCategory = _.groupBy(legendEntries, 'subcategory');
+        const dataGroupByCategory = _.groupBy(legendEntries, groupByString);
         const dataGroupByGroup = Object.keys(dataGroupByCategory).map(item =>
             _.groupBy(dataGroupByCategory[item], 'group')
         );
@@ -461,7 +502,7 @@ export function formatLegendObjectsForRectangles(
         dataGroupByGroup.map(item =>
             Object.keys(item).map(x => result.push(item[x]))
         );
-        const formatLegendRect = result.map(itemLegend => ({
+        return result.map(itemLegend => ({
             color: itemLegend[0].color,
             start: itemLegend[0].label,
             end:
@@ -469,9 +510,9 @@ export function formatLegendObjectsForRectangles(
                     ? itemLegend[itemLegend.length - 1].label
                     : itemLegend[0].label,
             category: itemLegend[0].subcategory,
+            sublabel: itemLegend[0].sublabel,
             group: itemLegend[0].group,
         }));
-        return formatLegendRect;
     }
 }
 
@@ -544,14 +585,19 @@ export function prepareMutationalSignatureDataForTable(
 export function formatTooltipLabelCosmicStyle(
     version: string,
     label: string,
-    category: ColorMapProps[]
+    category: ColorMapProps[],
+    yAxisSetting: string,
+    value: number
 ): string {
+    const valueLabel = yAxisSetting == '%' ? '%' : ' count(#)';
     if (version == 'SBS') {
         const labelSplit = label.split('_').map((x, i) => {
             return i == 1 ? '[' + x.replace('-', '->') + ']' : x;
         });
         return labelSplit.length > 1
-            ? 'Single nucleotide substitution of ' +
+            ? value +
+                  valueLabel +
+                  ' Single nucleotide substitution of ' +
                   labelSplit[1] +
                   ' around ' +
                   labelSplit.join('')
@@ -559,36 +605,84 @@ export function formatTooltipLabelCosmicStyle(
     } else if (version == 'DBS') {
         const labelSplit = label.split('-');
         return labelSplit.length > 1
-            ? 'Double nucleotide substitution of ' +
+            ? value +
+                  valueLabel +
+                  'Double nucleotide substitution of ' +
                   labelSplit[0] +
                   ' to ' +
                   labelSplit[1]
             : label;
     } else if (version == 'ID') {
-        const formatedLabel = formatIDlabelsCosmicStyle(label, category);
-        return formatedLabel !== '' ? formatedLabel : label;
+        const formattedLabel = formatIdLabelsCosmicStyle(
+            label,
+            category,
+            value,
+            valueLabel
+        );
+        return formattedLabel !== '' ? formattedLabel : label;
     } else {
         return label;
     }
 }
 
-function formatIDlabelsCosmicStyle(
+function formatIdLabelsCosmicStyle(
     label: string,
-    information: ColorMapProps[]
+    information: ColorMapProps[],
+    value: number,
+    valueLabel: string
 ): string {
     if (information[0].category == 'Microhomology') {
-        return 'Microhomology length ' + information[0].subcategory;
+        return (
+            value +
+            valueLabel +
+            ' ' +
+            information[0].category +
+            ' with microhomology length ' +
+            label.split('_')[3]
+        );
     } else if (information[0].category == '>1bp insertion') {
-        return 'Number of repeat units ' + information[0].subcategory;
+        return (
+            value +
+            valueLabel +
+            ' ' +
+            information[0].category +
+            ' with number of repeat units ' +
+            label.split('_')[3]
+        );
     } else if (information[0].category == '>1bp deletion') {
-        return 'Number of repeat units ' + information[0].subcategory;
+        return (
+            value +
+            valueLabel +
+            ' ' +
+            information[0].category +
+            ' with number of repeat units ' +
+            label.split('_')[3]
+        );
     } else if (information[0].category == '1bp deletion') {
         return (
-            'Homopolymer length of ' + information[0].subcategory + ' deletion'
+            value +
+            valueLabel +
+            ' ' +
+            information[0].category +
+            '(' +
+            information[0].subcategory +
+            ')' +
+            ' with homopolymer length of ' +
+            label.split('_')[3] +
+            ' deletion'
         );
     } else if (information[0].category == '1bp insertion') {
         return (
-            'Homopolymer length of ' + information[0].subcategory + ' insertion'
+            value +
+            valueLabel +
+            ' ' +
+            information[0].category +
+            '(' +
+            information[0].subcategory +
+            ')' +
+            ' with homopolymer length of ' +
+            label.split('_')[3] +
+            ' insertion'
         );
     } else {
         return '';

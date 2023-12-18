@@ -206,14 +206,11 @@ export default class MutationalSignaturesContainer extends React.Component<
     @observable
     _mutationalSignatureCountDataGroupedByVersionForSample: IMutationalCounts[];
     @computed get mutationalSignatureCountDataGroupedByVersionForSample() {
-        const sampleIdToFilter = this.props.samples.includes(this.props.sample)
-            ? this.props.sample
-            : undefined;
         return (
             this._mutationalSignatureCountDataGroupedByVersionForSample ||
             this.props.dataCount[this.props.version]
                 .map(item => item)
-                .filter(subItem => subItem.sampleId === sampleIdToFilter)
+                .filter(subItem => subItem.sampleId === this.sampleIdToFilter)
         );
     }
 
@@ -222,11 +219,13 @@ export default class MutationalSignaturesContainer extends React.Component<
         this.props.onVersionChange(option.value);
         this.signatureProfile = this.props.data[option.value][0].meta.name;
         this.signatureToPlot = this.props.data[option.value][0].meta.name;
+        this.updateReferencePlot = false;
         this.isSignatureInformationToolTipVisible = false;
     }
 
     @autobind
     private onSampleChange(sample: { label: string; value: string }): void {
+        this.getTotalMutationalCount;
         this.props.onSampleChange(sample.value);
     }
 
@@ -267,6 +266,24 @@ export default class MutationalSignaturesContainer extends React.Component<
             this.props.data[this.props.version],
             this.props.samples
         );
+    }
+
+    @computed get sampleIdToFilter() {
+        return this.props.samples.includes(this.props.sample)
+            ? this.props.sample
+            : undefined;
+    }
+
+    @computed get getTotalMutationalCount() {
+        const mutTotalCount = this.availableVersions.map(version => {
+            const countPerVersion = this.props.dataCount[version]
+                .filter(subItem => subItem.sampleId === this.sampleIdToFilter)
+                .map(item => {
+                    return item.value;
+                });
+            return countPerVersion.reduce((a, b) => a + b, 0);
+        });
+        return mutTotalCount;
     }
 
     public render() {
@@ -369,7 +386,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                                     style={{
                                         display: 'inline-block',
                                         marginLeft: 5,
-                                        width: 800,
+                                        width: 100,
                                         paddingBottom: 10,
                                     }}
                                 >
@@ -394,19 +411,6 @@ export default class MutationalSignaturesContainer extends React.Component<
                                             </ButtonGroup>
                                         </div>
                                     )}
-                                    <DownloadControls
-                                        filename="mutationalBarChart"
-                                        getSvg={this.getSvg}
-                                        buttons={['SVG', 'PNG', 'PDF']}
-                                        type="button"
-                                        dontFade
-                                        style={{
-                                            position: 'absolute',
-                                            top: 110,
-                                            right: 10,
-                                            paddingBottom: 10,
-                                        }}
-                                    />
                                 </div>
                             </div>
                         </div>
@@ -416,23 +420,71 @@ export default class MutationalSignaturesContainer extends React.Component<
                 {this.props.data && (
                     <div>
                         {!_.isEmpty(this.props.dataCount) && (
-                            <MutationalBarChart
-                                signature={this.signatureToPlot}
-                                height={220}
-                                width={1200}
-                                refStatus={false}
-                                svgId={'MutationalBarChart'}
-                                svgRef={this.assignPlotSvgRef}
-                                data={this.getDataForGraph}
-                                version={this.props.version}
-                                sample={this.props.sample}
-                                label={this.yAxisLabel}
-                                updateReference={this.updateReferencePlot}
-                                initialReference={
-                                    this.props.data[this.props.version][0].meta
-                                        .name
-                                }
-                            />
+                            <div>
+                                <div
+                                    style={{
+                                        float: 'left',
+                                        paddingLeft: 10,
+                                    }}
+                                >
+                                    <h5>Sample</h5>
+                                    <text> {this.props.sample}</text>
+                                    <h5>Total count</h5>
+                                    {this.availableVersions[0]}:
+                                    {this.getTotalMutationalCount[0]}
+                                    <br />
+                                    {this.availableVersions[1]}:
+                                    {this.getTotalMutationalCount[1]}
+                                    <br />
+                                    {this.availableVersions[2]}:
+                                    {this.getTotalMutationalCount[2]}
+                                    <br />
+                                </div>
+                                <div
+                                    className={'borderedChart'}
+                                    style={{ marginLeft: 150, width: 1500 }}
+                                >
+                                    <div
+                                        style={{
+                                            zIndex: 10,
+                                            position: 'absolute',
+                                            right: 10,
+                                            top: 10,
+                                        }}
+                                    >
+                                        <DownloadControls
+                                            filename="mutationalBarChart"
+                                            getSvg={this.getSvg}
+                                            buttons={['SVG', 'PNG', 'PDF']}
+                                            type="button"
+                                            dontFade
+                                        />
+                                    </div>
+                                    <div style={{ overflow: 'auto' }}>
+                                        <MutationalBarChart
+                                            signature={this.signatureToPlot}
+                                            height={220}
+                                            width={1200}
+                                            refStatus={false}
+                                            svgId={'MutationalBarChart'}
+                                            svgRef={this.assignPlotSvgRef}
+                                            data={this.getDataForGraph}
+                                            version={this.props.version}
+                                            sample={this.props.sample}
+                                            label={this.yAxisLabel}
+                                            selectedScale={this.selectedScale}
+                                            updateReference={
+                                                this.updateReferencePlot
+                                            }
+                                            initialReference={
+                                                this.props.data[
+                                                    this.props.version
+                                                ][0].meta.name
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         <div>
