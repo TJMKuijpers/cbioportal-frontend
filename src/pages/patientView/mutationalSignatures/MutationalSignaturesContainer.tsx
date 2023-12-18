@@ -428,7 +428,7 @@ export default class MutationalSignaturesContainer extends React.Component<
                                     }}
                                 >
                                     <h5>Sample</h5>
-                                    <text> {this.props.sample}</text>
+                                    {this.props.sample}
                                     <h5>Total count</h5>
                                     {this.availableVersions[0]}:
                                     {this.getTotalMutationalCount[0]}
