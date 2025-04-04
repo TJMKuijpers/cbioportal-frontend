@@ -168,6 +168,7 @@ import { FilteredAndAnnotatedMutationsReport } from 'shared/lib/comparison/Analy
 import { AnnotatedNumericGeneMolecularData } from 'shared/model/AnnotatedNumericGeneMolecularData';
 import { ExtendedAlteration } from 'shared/model/ExtendedAlteration';
 import CaseFilterWarning from '../banners/CaseFilterWarning';
+import { ClinicalDataCountSummary } from 'pages/studyView/StudyViewUtils';
 
 enum EventKey {
     horz_logScale,
@@ -201,6 +202,7 @@ export enum PlotType {
     WaterfallPlot,
     BoxPlot,
     DiscreteVsDiscrete,
+    PieChart,
 }
 
 export enum DiscreteVsDiscretePlotType {
@@ -396,7 +398,7 @@ const searchInputTimeoutMs = 600;
 class PlotsTabScatterPlot extends ScatterPlot<IScatterPlotData> {}
 class PlotsTabBoxPlot extends BoxScatterPlot<IBoxScatterPlotPoint> {}
 class PlotsTabWaterfallPlot extends WaterfallPlot<IWaterfallPlotData> {}
-
+class PlotsTabPieChart extends PieChart<IPieChartProps> {}
 const SVG_ID = 'plots-tab-plot-svg';
 
 export const NONE_SELECTED_OPTION_STRING_VALUE = 'none';
@@ -5812,6 +5814,8 @@ export default class PlotsTab extends React.Component<IPlotsTabProps, {}> {
                         }
                     default:
                         return <span>Not implemented yet</span>;
+                    case PlotType.PieChart:
+                        <PlotsTabPieChart></PlotsTabPieChart>;
                 }
                 return (
                     <div>
